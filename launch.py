@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout
-from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
+from PyQt6.QtGui import QFont, QPixmap, QPainter, QColor
 import sys
 
 class Window(QWidget):
@@ -11,8 +11,9 @@ class Window(QWidget):
         vLayout = QVBoxLayout()
         hLayout = QHBoxLayout()
         
-        file_button = QPushButton("选择文件", self)
-        file_button.clicked.connect(self.on_file_button_click)
+        select_file_button = QPushButton("选择文件", self)
+        select_file_button.setFixedHeight(40)
+        select_file_button.clicked.connect(self.select_file_button_click)
 
         # 输入框
         self.path_input = QLineEdit(self)
@@ -23,25 +24,35 @@ class Window(QWidget):
         self.path_input.setFont(font)
        
         # todo 消息闪现（成果、失败）
-        file_generate = QPushButton("生成", self)
-        file_generate.setStyleSheet("background-color: green")
-        # file_button.clicked.connect(self.on_file_button_click)
+        image_generate_button = QPushButton("生成", self)
+        image_generate_button.setFixedHeight(40)
+        # file_generate.setStyleSheet("background-color: green")
+        image_generate_button.clicked.connect(self.image_generate_button_click)
 
         # todo 
-        file_export = QPushButton("导出", self)
-        file_export.setStyleSheet("background-color: yellow")
+        image_export_button = QPushButton("导出", self)
+        image_export_button.setFixedHeight(40)
+        # file_export.setStyleSheet("background-color: yellow")
+        image_export_button.clicked.connect(self.image_export_button_click)
 
-        vLayout.addWidget(file_button)
+        self.status_label = QLabel(self)
+        self.image_label = QLabel(self)  
+
+        vLayout.addWidget(select_file_button)
         vLayout.addWidget(self.path_input)
 
-        hLayout.addWidget(file_generate)  
-        hLayout.addWidget(file_export) 
+        hLayout.addWidget(image_generate_button)  
+        hLayout.addWidget(image_export_button) 
         vLayout.addLayout(hLayout)
 
+        vLayout.addWidget(self.status_label)
+        vLayout.addWidget(self.image_label)  
+
         self.setLayout(vLayout)
+        self.image_generated = False  # 用于标记是否已生成图片
 
         
-    def on_file_button_click(self):
+    def select_file_button_click(self):
         file_dialog = QFileDialog()
         # file_path, _ = file_dialog.getOpenFileName(self, "选择文件")
         # if file_path:
@@ -50,6 +61,28 @@ class Window(QWidget):
         file_path, _ = file_dialog.getOpenFileName(self, "选择文件", "", "Excel文件 (*.xlsx)")
         if file_path:
             self.path_input.setText(file_path)
+
+    def image_generate_button_click(self):
+        # todo: image generate here
+        pixmap = QPixmap(100, 100)
+        pixmap.fill(QColor("black"))
+
+        self.image_label.setPixmap(pixmap)
+        self.status_label.setText("已成功生成！请点按「导出」")
+
+        self.image_generated = True
+
+    def image_export_button_click(self):
+        if not self.image_generated:  # 如果没有生成图片
+            QMessageBox.warning(self, "警告", "请先「生成」图片", QMessageBox.StandardButton.Ok)
+            return
+        
+        file_dialog = QFileDialog()
+        file_path, _ = file_dialog.getSaveFileName(self, "保存文件", "", "PNG文件 (*.png)")
+        if file_path:
+            pixmap = self.image_label.pixmap()
+            pixmap.save(file_path)
+            self.status_label.setText("已导出到：" + file_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
