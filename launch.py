@@ -11,6 +11,7 @@ from io import BytesIO
 class Window(QWidget):
     def __init__(self):
         super().__init__()
+        plt.rcParams['font.sans-serif']=['SimHei'] # move SimHei.ttf file to /path/to/your/virtualenv/lib/pythonX.X/site-packages/matplotlib/mpl-data/fonts/ttf/
         self.setWindowTitle("科能高级技工学校“双优计划”评分表")
         self.setGeometry(100, 100, 400, 200)
 
@@ -92,9 +93,15 @@ class Window(QWidget):
 
         if self.file_path:
             df = pd.read_excel(self.file_path)
-            print("列名:", df.columns)
-            # # 提取N12, P12, R12, T12, V12单元格的内容
-            # values = [df.at[11, 'N'], df.at[11, 'P'], df.at[11, 'R'], df.at[11, 'T'], df.at[11, 'V']]
+            values = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
+
+            data = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
+        '占比': values}
+            df1 = pd.DataFrame(data)
+            colors = ['green', 'red', 'blue', 'yellow', 'orange']
+            plt.pie(df1['占比'], labels=df1['部分'], autopct='%.1f%%', colors=colors)
+            plt.axis('equal') 
+            
 
             # # 定义饼图的大小，以及每个部分的标签和颜色
             # sizes = [35, 35, 15, 5, 10]
