@@ -97,19 +97,64 @@ class Window(QWidget):
 
         if self.file_path:
             df = pd.read_excel(self.file_path)
-
-            values = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
-            data = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
-        '占比': values}
-            df1 = pd.DataFrame(data)
             colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
-            patches, texts, autotexts = plt.pie(df1['占比'], labels=df1['部分'],autopct=df1['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
-            plt.setp(texts, color='none')
-            plt.axis('equal') 
-            plt.title("党建考核",loc='left',color='blue')
 
-            # 保存图表为QPixmap
+            # 保存图表为 QPixmap
             buffer = BytesIO()
+            fig, axs = plt.subplots(2, 2, figsize=(16, 9))  # 创建一个包含两个子图的画布
+            
+            values1 = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
+            data1 = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
+        '占比': values1}
+            df1 = pd.DataFrame(data1)
+            patches1, texts1, autotexts1 = axs[0,0].pie(df1['占比'], labels=df1['部分'],autopct=df1['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+            plt.setp(texts1, color='none')
+            axs[0,0].set_title("党建考核", loc='left', color='blue')
+            plt.axis('equal')
+
+            values2 = [df.at[32, 'Unnamed: 13'], df.at[32, 'Unnamed: 15'], df.at[32, 'Unnamed: 17'], df.at[32, 'Unnamed: 19'], df.at[32, 'Unnamed: 21']]
+            data2 = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
+        '占比': values2}
+            df2 = pd.DataFrame(data2)
+            patches2, texts2, autotexts2 = axs[0,1].pie(df2['占比'], labels=df2['部分'],autopct=df2['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+            plt.setp(texts2, color='none')
+            axs[0,1].set_title("信息化建设考核", loc='left', color='blue')
+            plt.axis('equal') 
+
+            values3 = [df.at[16, 'Unnamed: 13'], df.at[16, 'Unnamed: 15'], df.at[16, 'Unnamed: 17'], df.at[16, 'Unnamed: 19'], df.at[16, 'Unnamed: 21']]
+            data3 = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
+        '占比': values3}
+            df3 = pd.DataFrame(data3)
+            patches3, texts3, autotexts3 = axs[1,0].pie(df3['占比'], labels=df3['部分'],autopct=df3['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+            plt.setp(texts3, color='none')
+            axs[1,0].set_title("立德树人考核", loc='left', color='blue')
+            plt.axis('equal') 
+
+            values4 = [df.at[38, 'Unnamed: 13'], df.at[38, 'Unnamed: 15'], df.at[38, 'Unnamed: 17'], df.at[38, 'Unnamed: 19'], df.at[38, 'Unnamed: 21']]
+            data4 = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
+        '占比': values4}
+            df4 = pd.DataFrame(data4)
+            patches4, texts4, autotexts4 = axs[1,1].pie(df4['占比'], labels=df4['部分'],autopct=df4['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+            plt.setp(texts4, color='none')
+            axs[1,1].set_title("社会服务能力考核", loc='left', color='blue')
+            plt.axis('equal') 
+
+            ax_middle = fig.add_axes([0.35, 0.35, 0.3, 0.3])
+            categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
+            values5 = [20, 30, 25, 15, 10]  
+            ax_middle.set_aspect('equal')
+            ax_middle.set_xlim(0, 60)  # 设置x轴范围
+            ax_middle.set_ylim(-0.8, len(categories) * 2)
+            ax_middle.set_yticks(range(len(categories)))  # 设置y轴刻度
+            ax_middle.set_yticklabels(categories)  
+            bar_height = 2  # 以加粗条形
+            for i, (value, category) in enumerate(zip(values5, categories)):
+                ax_middle.barh(i * 1.2, value, height=bar_height, color=colors[i], edgecolor='none')
+                ax_middle.barh(i * 1.2, 100-value, left=value, height=bar_height, color='white', edgecolor='none')
+            ax_middle.set_title('整体考核',loc='left', color='blue') 
+            # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数
+            
+            plt.subplots_adjust(wspace=0.7, hspace=0.7)
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
