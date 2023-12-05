@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['/Users/brealin/DEV/双优计划/launch.py'],
+    ['/Users/brealin/DEV/shuangyoujihua/launch.py'],
     pathex=[],
     binaries=[],
     datas=[],

@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox
-from PyQt6.QtGui import QFont, QPixmap, QPainter, QColor
-from PyQt6.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QGridLayout
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtCore import QTimer
+from PyQt5.QtChart import QChart, QChartView, QPieSeries
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -87,40 +88,25 @@ class Window(QWidget):
     
     def image_generate_button_click(self):
         # todo: image generate here
+        def ColorTrans(r,g,b,a):
+            return (r/255,g/255,b/255,a)
+        
         if not self.file_path:
             QMessageBox.warning(self, "警告", "请先「选择文件」", QMessageBox.StandardButton.Ok)
             return
 
         if self.file_path:
             df = pd.read_excel(self.file_path)
-            values = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
 
+            values = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
             data = {'部分': ['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],
         '占比': values}
             df1 = pd.DataFrame(data)
-            colors = ['green', 'red', 'blue', 'yellow', 'orange']
-            plt.pie(df1['占比'], labels=df1['部分'], autopct='%.1f%%', colors=colors)
+            colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
+            patches, texts, autotexts = plt.pie(df1['占比'], labels=df1['部分'],autopct=df1['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+            plt.setp(texts, color='none')
             plt.axis('equal') 
-            
-
-            # # 定义饼图的大小，以及每个部分的标签和颜色
-            # sizes = [35, 35, 15, 5, 10]
-            # labels = ['35%', '35%', '15%', '5%', '10%']
-            # colors = ['green', 'red', 'blue', 'yellow', 'orange']
-            # explode = (0.1, 0, 0, 0, 0)  # 仅突出显示第一个部分
-
-            # # 计算实际占比
-            # actual_sizes = [value / size if value < size else size for value, size in zip(values, sizes)]
-            # remaining_sizes = [size - actual for actual, size in zip(actual_sizes, sizes)]
-
-            # # 绘制实际占比的饼图
-            # fig, ax = plt.subplots()
-            # ax.pie(actual_sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
-
-            # # 绘制剩余部分的灰色饼图
-            # grey_colors = ['grey' if remaining > 0 else 'white' for remaining in remaining_sizes]
-            # ax.pie(remaining_sizes, colors=grey_colors, radius=0.7, startangle=140)
-            # ax.set(aspect="equal")
+            plt.title("党建考核",loc='left',color='blue')
 
             # 保存图表为QPixmap
             buffer = BytesIO()
@@ -136,6 +122,8 @@ class Window(QWidget):
             self.image_generated = True
         else:
             QMessageBox.warning(self, "警告", "文件路径为空，请选择一个有效的 Excel 文件", QMessageBox.StandardButton.Ok)
+        
+        
 
     def image_export_button_click(self):
         if not self.image_generated:  # 如果没有生成图片
