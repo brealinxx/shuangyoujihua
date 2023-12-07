@@ -6,6 +6,7 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+import matplotlib.colors as mcolors
 import openpyxl
 import os
 from io import BytesIO
@@ -103,7 +104,7 @@ class Window(QWidget):
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
-            fig, axs = plt.subplots(figsize=(16, 9)) 
+            fig, axs = plt.subplots(figsize=(32, 18)) 
             axs.axis('off') 
             gs = GridSpec(5, 3)
             axs = [
@@ -173,11 +174,37 @@ class Window(QWidget):
             CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
             CreateBarCharts(axs[3][1],values2,-1,2,7,3,'国际交流合作考核')
             CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
-            CreateBarCharts(axs[4][0],values2,-1,2,7,3,'国际交流合作考核')
+
+
+            #! 比例问题
+
+
+            box_width = 0.45
+            box_height = 0.4
+            spacing = 0.1  # 方块之间的间距
+            x_positions = [0, 0.5]  # 方块的x坐标
+            y_position = 0.5 # 方块的y坐标
+            reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
+            cmap = mcolors.ListedColormap(['red', 'orange', 'yellow', 'green', 'blue'])
+            bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
+            norm = mcolors.BoundaryNorm(bounds, cmap.N)
+            percentages = [0.1, 0.6]  #! 模拟的百分比数据
+            for i in range(2):
+                # 计算每个方块的位置
+                x = x_positions[i]
+                y = y_position
+
+                # 创建带有文字的方块，并应用颜色映射
+                rect = plt.Rectangle((x, y), box_width, box_height, color=cmap(norm(percentages[i])))
+                axs[4][0].add_patch(rect)
+                axs[4][0].text(x + box_width / 2, y + box_height / 2, f'{reacName[i]}', ha='center', va='center', fontsize=12)
+
+
 
             #! test delete frame
             axs[0][1].axis('off')
             axs[2][1].axis('off')
+            axs[4][0].axis('off')
 
             gs.update(wspace=.8, hspace=.9) # 调整整体间距
             plt.savefig(buffer, format='png')
