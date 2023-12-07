@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QGridLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QGridLayout,QScrollArea
 from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import QTimer
 from PyQt5.QtChart import QChart, QChartView, QPieSeries
@@ -18,7 +18,7 @@ class Window(QWidget):
         self.setWindowTitle("科能高级技工学校“双优计划”评分表")
         self.setGeometry(100, 100, 400, 200)
 
-        vLayout = QVBoxLayout()
+        self.vLayout = QVBoxLayout()
         hLayout = QHBoxLayout()
         
         #* 选择文件按钮
@@ -54,17 +54,17 @@ class Window(QWidget):
         self.status_label = QLabel(self)
         self.image_label = QLabel(self)  
 
-        vLayout.addWidget(select_file_button)
-        vLayout.addWidget(self.path_input)
+        self.vLayout.addWidget(select_file_button)
+        self.vLayout.addWidget(self.path_input)
 
         hLayout.addWidget(image_generate_button)  
         hLayout.addWidget(image_export_button) 
-        vLayout.addLayout(hLayout)
+        self.vLayout.addLayout(hLayout)
 
-        vLayout.addWidget(self.status_label)
-        vLayout.addWidget(self.image_label)  
-
-        self.setLayout(vLayout)
+        self.vLayout.addWidget(self.status_label)
+        self.vLayout.addWidget(self.image_label)  
+    
+        self.setLayout(self.vLayout)
 
         self.image_generated = False 
         self.file_path = ""
@@ -105,11 +105,13 @@ class Window(QWidget):
             buffer = BytesIO()
             fig, axs = plt.subplots(figsize=(16, 9)) 
             axs.axis('off') 
-            gs = GridSpec(3, 3)
+            gs = GridSpec(5, 3)
             axs = [
                 [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[0, 2])],
                 [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1]), fig.add_subplot(gs[1, 2])],
-                [fig.add_subplot(gs[2, 0]), fig.add_subplot(gs[2, 1]), fig.add_subplot(gs[2, 2])]
+                [fig.add_subplot(gs[2, 0]), fig.add_subplot(gs[2, 1]), fig.add_subplot(gs[2, 2])],
+                [fig.add_subplot(gs[3, 0]), fig.add_subplot(gs[3, 1]), fig.add_subplot(gs[3, 2])],
+                [fig.add_subplot(gs[4, 0]), fig.add_subplot(gs[4, 1]), fig.add_subplot(gs[4, 2])]
                 ]
             
             def CreatePie(subplot,value,title):
@@ -120,6 +122,35 @@ class Window(QWidget):
                 subplot.set_title(title, loc='left', color='blue')
                 plt.axis('equal')
 
+            def CreateHBarCharts(subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
+                categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
+                # subplot.set_xlim(0, 60)  # 设置x轴范围
+                lefts = np.arange(len(categories)) * set_yticks
+                for i, (value, category) in enumerate(zip(value, categories)):
+                    bar = subplot.barh(lefts[i], value, height=bar_height, color=colors[i], edgecolor='none')
+                subplot.set_ylim(set_ylim1, set_ylim2)
+                subplot.set_yticks(lefts + 0.5)
+                subplot.set_yticklabels(categories)
+                subplot.set_title(title, loc='left', color='blue')
+                subplot.tick_params(bottom=False)
+                # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
+                
+            def CreateBarCharts(subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title):
+                categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
+                subplot.set_ylabel('百分比 (%)')
+                # subplot.set_ylim(0, 100) 
+                plt.grid(axis='y') 
+                bottoms = np.arange(len(categories)) * set_xticks
+                for i, (val, category) in enumerate(zip(value, categories)):
+                    bar = subplot.bar(bottoms[i], val, width=bar_width, color=colors[i], edgecolor='none')
+                    # subplot.axhline(val, linestyle='--', color='gray') 
+                subplot.set_xlim(set_xlim1, set_xlim2)
+                subplot.set_xticks(bottoms)
+                subplot.set_xticklabels(categories, rotation=45)
+                subplot.set_title(title, loc='left', color='blue')
+                subplot.tick_params(left=False)
+
+            
             values1 = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
             CreatePie(axs[0][0],values1,"党建考核")
 
@@ -134,45 +165,49 @@ class Window(QWidget):
 
             categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
-            axs[1][1].set_aspect('equal')
-            # ax_middle.set_xlim(0, 60)  # 设置x轴范围
-            axs[1][1].set_ylim(-1.8, len(categories) * 3.5) 
-            axs[1][1].set_yticks(np.arange(len(categories)) * 3.3)  # 设置y轴刻度
-            axs[1][1].set_yticklabels(categories)  
-            bar_height = 3  # 以加粗条形、间距
-            for i, (value, category) in enumerate(zip(values5, categories)):
-                axs[1][1].barh(i * 3, value, height=bar_height, color=colors[i], edgecolor='none')
-                axs[1][1].barh(i * 3, 100-value, left=value, height=bar_height, color='white', edgecolor='none')
-            axs[1][1].set_title('整体考核',loc='left', color='blue') 
-            # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数
+            CreateHBarCharts(axs[1][1],values5,-1,2,3,2,'整体考核')
+            CreateHBarCharts(axs[2][0],values5,-1,2,3,2,'治理体系考核')
 
-            axs[2][0].set_aspect('equal')
-            axs[2][0].set_ylim(-1.8, len(categories) * 3.5) 
-            axs[2][0].set_yticks(np.arange(len(categories)) * 3.3)  # 设置y轴刻度
-            axs[2][0].set_yticklabels(categories)  
-            for i, (value, category) in enumerate(zip(values5, categories)):
-                axs[2][0].barh(i * 3.2, value, height=bar_height, color=colors[i], edgecolor='none')
-                axs[2][0].barh(i * 3.2, 100-value, left=value, height=bar_height, color='white', edgecolor='none')
-            axs[2][0].set_title('治理体系考核',loc='left', color='blue') 
+            #! 3
+            CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
+            CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
+            CreateBarCharts(axs[3][1],values2,-1,2,7,3,'国际交流合作考核')
+            CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
+            CreateBarCharts(axs[4][0],values2,-1,2,7,3,'国际交流合作考核')
 
-            axs[0][1].axis('off') #! test delete frame
+            #! test delete frame
+            axs[0][1].axis('off')
+            axs[2][1].axis('off')
 
-            gs.update(wspace=.5, hspace=.3) # 调整整体间距
+            gs.update(wspace=.8, hspace=.9) # 调整整体间距
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
             pixmap.loadFromData(buffer.getvalue())
             buffer.close()
 
-            # 显示图片
             self.image_label.setPixmap(pixmap)
+            self.image_label.adjustSize()
+
+            # 创建一个QWidget，将QLabel放置在该QWidget中
+            chart_widget = QWidget()
+            chart_layout = QVBoxLayout()
+            chart_layout.addWidget(self.image_label)
+            chart_widget.setLayout(chart_layout)
+
+            # 创建一个QScrollArea
+            scroll_area = QScrollArea()
+            scroll_area.setWidgetResizable(True)  # 设置QScrollArea自适应大小
+            scroll_area.setWidget(chart_widget)  # 将QWidget设置为QScrollArea的widget
+            self.vLayout.addWidget(scroll_area)
+
+            # 显示图片
             self.status_label.setText("已成功生成！请点按「导出」")
             self.image_generated = True
         else:
             QMessageBox.warning(self, "警告", "文件路径为空，请选择一个有效的 Excel 文件", QMessageBox.StandardButton.Ok)
         
         
-
     def image_export_button_click(self):
         if not self.image_generated:  # 如果没有生成图片
             QMessageBox.warning(self, "警告", "请先「生成」图片", QMessageBox.StandardButton.Ok)
