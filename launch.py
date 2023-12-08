@@ -106,14 +106,8 @@ class Window(QWidget):
             buffer = BytesIO()
             fig, axs = plt.subplots(figsize=(32, 18)) 
             axs.axis('off') 
-            gs = GridSpec(5, 3)
-            axs = [
-                [fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[0, 2])],
-                [fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1]), fig.add_subplot(gs[1, 2])],
-                [fig.add_subplot(gs[2, 0]), fig.add_subplot(gs[2, 1]), fig.add_subplot(gs[2, 2])],
-                [fig.add_subplot(gs[3, 0]), fig.add_subplot(gs[3, 1]), fig.add_subplot(gs[3, 2])],
-                [fig.add_subplot(gs[4, 0]), fig.add_subplot(gs[4, 1]), fig.add_subplot(gs[4, 2])]
-                ]
+            gs = GridSpec(6, 3)
+            axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
             
             def CreatePie(subplot,value,title):
                 data = {'部分':['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],'占比':value}
@@ -139,8 +133,7 @@ class Window(QWidget):
             def CreateBarCharts(subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title):
                 categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
                 subplot.set_ylabel('百分比 (%)')
-                # subplot.set_ylim(0, 100) 
-                plt.grid(axis='y') 
+                subplot.set_ylim(0, 100) 
                 bottoms = np.arange(len(categories)) * set_xticks
                 for i, (val, category) in enumerate(zip(value, categories)):
                     bar = subplot.bar(bottoms[i], val, width=bar_width, color=colors[i], edgecolor='none')
@@ -150,6 +143,7 @@ class Window(QWidget):
                 subplot.set_xticklabels(categories, rotation=45)
                 subplot.set_title(title, loc='left', color='blue')
                 subplot.tick_params(left=False)
+                subplot.grid(axis='y') 
 
             
             values1 = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
@@ -176,35 +170,88 @@ class Window(QWidget):
             CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
 
 
+
             #! 比例问题
+
 
 
             box_width = 0.45
             box_height = 0.4
             spacing = 0.1  # 方块之间的间距
-            x_positions = [0, 0.5]  # 方块的x坐标
+            x_positions = [0, 0.35, 0.7]  # 方块的x坐标
             y_position = 0.5 # 方块的y坐标
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
             cmap = mcolors.ListedColormap(['red', 'orange', 'yellow', 'green', 'blue'])
             bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
             norm = mcolors.BoundaryNorm(bounds, cmap.N)
-            percentages = [0.1, 0.6]  #! 模拟的百分比数据
-            for i in range(2):
-                # 计算每个方块的位置
-                x = x_positions[i]
-                y = y_position
+            percentages = [0.1, 0.6, 0.9]  #! 模拟的百分比数据
 
-                # 创建带有文字的方块，并应用颜色映射
-                rect = plt.Rectangle((x, y), box_width, box_height, color=cmap(norm(percentages[i])))
-                axs[4][0].add_patch(rect)
-                axs[4][0].text(x + box_width / 2, y + box_height / 2, f'{reacName[i]}', ha='center', va='center', fontsize=12)
+            def CreateRectCharts(subplot, box_widthReduce ,textXPos, namePos):
+                for i in range(3):
+                    x = x_positions[i] # 计算每个方块的位置
+                    y = y_position
+
+                    # 创建带有文字的方块，并应用颜色映射
+                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, color=cmap(norm(percentages[i])))
+                    subplot.add_patch(rect)
+                    subplot.text(x + box_width / 2 - textXPos, y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=12)
+
+            #! 4
+            CreateRectCharts(axs[4][0],0.2,0.08,0)
+            CreateRectCharts(axs[4][2],0.2,0.08,6)
+            CreateRectCharts(axs[4][1],0.2,0.08,3)
+            
+            
+            #! 5
+            # axs.append([fig.add_subplot(gs[5, :])])
+            # CreateBarCharts(axs[5][0],values2,-1,2,7,3,'国际交流合作考核')
+
+            
+            #! 6
 
 
+
+            #! 7 模拟数据
+            sheet = fig.add_subplot(gs[5, :])
+            data = [['状态', '描述', '责任人'],
+                    ['完成', '任务已完成', '张三'],
+                    ['进行中', '任务正在进行', '李四'],
+                    ['未开始', '任务尚未开始', '王五'],
+                    ['未开始', '任务尚未开始', '王五'],
+                    ['未开始', '任务尚未开始', '王五'],
+                    ['未开始', '任务尚未开始', '王五'],
+                    ['未开始', '任务尚未开始', '王五'],
+                    ['未开始', '任务尚未开始', '王五'],
+                ]
+            percentages1 = [100, 50, 0]  
+
+            cmap1 = mcolors.ListedColormap(['red', 'orange', 'yellow', 'green', 'blue'])
+            bounds1 = [0, 20, 40, 60, 80, 100]
+            norm1 = mcolors.BoundaryNorm(bounds1, cmap1.N)
+
+            table = sheet.table(cellText=data, colWidths=[0.33] * 3, loc='center', cellLoc='center')
+            table.scale(1, 2)
+            sheet.set_xlim(0, 1)
+            sheet.set_ylim(0, 2)
+            for i, percentage in enumerate(percentages1, start=1):
+                table[i, 0].set_facecolor(cmap1(norm1(percentage)))
+                table[i, 0].set_text_props(weight='bold', color='white')
+            #table.scale()
+            table.auto_set_font_size(False)
+            table.set_fontsize(20)
+            
 
             #! test delete frame
             axs[0][1].axis('off')
             axs[2][1].axis('off')
             axs[4][0].axis('off')
+            axs[4][1].axis('off')
+            axs[4][2].axis('off')
+            axs[5][0].axis('off')
+            axs[5][1].axis('off')
+            axs[5][2].axis('off')
+            sheet.axis('off')
+            
 
             gs.update(wspace=.8, hspace=.9) # 调整整体间距
             plt.savefig(buffer, format='png')
