@@ -100,14 +100,28 @@ class Window(QWidget):
 
         if self.file_path:
             df = pd.read_excel(self.file_path)
+            workbook = openpyxl.load_workbook(self.file_path, data_only=True)
+            sheets = workbook.active
             colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
-            fig, axs = plt.subplots(figsize=(32, 18)) 
+            fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72))
             axs.axis('off') 
             gs = GridSpec(6, 3)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
+            ratio = [35,35,15,5,15]
+
+            def GetExcelData(definedName):
+                # 通过定义名称获取单元格对象
+                o = workbook.defined_names[definedName]
+                # 获取定义名称的范围
+                cells = o.destinations
+
+                # 从单元格对象中获取值
+                sheet_name, cell_range = next(cells)
+                sheet = workbook[sheet_name]
+                return sheet[cell_range].value
             
             def CreatePie(subplot,value,title):
                 data = {'部分':['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],'占比':value}
@@ -121,8 +135,12 @@ class Window(QWidget):
                 categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
                 # subplot.set_xlim(0, 60)  # 设置x轴范围
                 lefts = np.arange(len(categories)) * set_yticks
+                cmap = mcolors.ListedColormap(colors)
+                bounds = [0, 0.6, 0.75, 0.9, 1, 1]
+                norm = mcolors.BoundaryNorm(bounds, cmap.N)
                 for i, (value, category) in enumerate(zip(value, categories)):
-                    bar = subplot.barh(lefts[i], value, height=bar_height, color=colors[i], edgecolor='none')
+                    bar = subplot.barh(lefts[i], value, height=bar_height, color=cmap(norm(value/100)))
+
                 subplot.set_ylim(set_ylim1, set_ylim2)
                 subplot.set_yticks(lefts + 0.5)
                 subplot.set_yticklabels(categories)
@@ -145,24 +163,25 @@ class Window(QWidget):
                 subplot.tick_params(left=False)
                 subplot.grid(axis='y') 
 
-            
-            values1 = [df.at[9, 'Unnamed: 13'], df.at[9, 'Unnamed: 15'], df.at[9, 'Unnamed: 17'], df.at[9, 'Unnamed: 19'], df.at[9, 'Unnamed: 21']]
+            #todo data mapping
+            values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
             CreatePie(axs[0][0],values1,"党建考核")
 
-            values2 = [df.at[32, 'Unnamed: 13'], df.at[32, 'Unnamed: 15'], df.at[32, 'Unnamed: 17'], df.at[32, 'Unnamed: 19'], df.at[32, 'Unnamed: 21']]
+            values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
             CreatePie(axs[0][2],values2,"信息化建设考核")
 
-            values3 = [df.at[16, 'Unnamed: 13'], df.at[16, 'Unnamed: 15'], df.at[16, 'Unnamed: 17'], df.at[16, 'Unnamed: 19'], df.at[16, 'Unnamed: 21']]
+            values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
             CreatePie(axs[1][0],values3,"立德树人考核")
 
-            values4 = [df.at[38, 'Unnamed: 13'], df.at[38, 'Unnamed: 15'], df.at[38, 'Unnamed: 17'], df.at[38, 'Unnamed: 19'], df.at[38, 'Unnamed: 21']]
+            values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
             CreatePie(axs[1][2],values4,"社会服务能力考核")
 
             categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
             CreateHBarCharts(axs[1][1],values5,-1,2,3,2,'整体考核')
-            CreateHBarCharts(axs[2][0],values5,-1,2,3,2,'治理体系考核')
-
+            values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
+            CreateHBarCharts(axs[2][0],values6,-1,2,3,2,'治理体系考核')
+            
             #! 3
             CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
             CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
@@ -170,9 +189,7 @@ class Window(QWidget):
             CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
 
 
-
             #! 比例问题
-
 
 
             box_width = 0.45
@@ -181,7 +198,7 @@ class Window(QWidget):
             x_positions = [0, 0.35, 0.7]  # 方块的x坐标
             y_position = 0.5 # 方块的y坐标
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
-            cmap = mcolors.ListedColormap(['red', 'orange', 'yellow', 'green', 'blue'])
+            cmap = mcolors.ListedColormap(colors)
             bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
             norm = mcolors.BoundaryNorm(bounds, cmap.N)
             percentages = [0.1, 0.6, 0.9]  #! 模拟的百分比数据
@@ -211,34 +228,36 @@ class Window(QWidget):
 
 
 
-            #! 7 模拟数据
+            #! 7 调整位置
             sheet = fig.add_subplot(gs[5, :])
-            data = [['状态', '描述', '责任人'],
-                    ['完成', '任务已完成', '张三'],
-                    ['进行中', '任务正在进行', '李四'],
-                    ['未开始', '任务尚未开始', '王五'],
-                    ['未开始', '任务尚未开始', '王五'],
-                    ['未开始', '任务尚未开始', '王五'],
-                    ['未开始', '任务尚未开始', '王五'],
-                    ['未开始', '任务尚未开始', '王五'],
-                    ['未开始', '任务尚未开始', '王五'],
-                ]
-            percentages1 = [100, 50, 0]  
+            tasks_and_scores = {}
+            for row in sheets.iter_rows(min_row=4, values_only=True):  # 从第二行开始遍历，假设第一行是标题
+                name, task, score = row[5], row[4], row[25]
+                if name not in tasks_and_scores:
+                    tasks_and_scores[name] = {task: score}  # 如果姓名不在字典中，创建一个新的任务和评分字典
+                else:
+                    tasks_and_scores[name][task] = score  # 如果姓名已经在字典中，添加新的任务和评分
 
-            cmap1 = mcolors.ListedColormap(['red', 'orange', 'yellow', 'green', 'blue'])
-            bounds1 = [0, 20, 40, 60, 80, 100]
-            norm1 = mcolors.BoundaryNorm(bounds1, cmap1.N)
+            percentages1 = []  
+            data = [['评分', '任务', '姓名']]
+            for name, tasks in tasks_and_scores.items():
+                for task, score in tasks.items():
+                    if task and name:  
+                        data.append([score, task, name])  
+                        percentages1.append(score)
+            
+            bounds1 = [0, 60, 75, 90, 100, 1000]
+            norm1 = mcolors.BoundaryNorm(bounds1, cmap.N)
 
-            table = sheet.table(cellText=data, colWidths=[0.33] * 3, loc='center', cellLoc='center')
-            table.scale(1, 2)
+            table = sheet.table(cellText=data, colWidths=[0.03,0.45,0.1], loc='center', cellLoc='center')
+            table.scale(2, 2)
             sheet.set_xlim(0, 1)
             sheet.set_ylim(0, 2)
             for i, percentage in enumerate(percentages1, start=1):
-                table[i, 0].set_facecolor(cmap1(norm1(percentage)))
+                table[i, 0].set_facecolor(cmap(norm1(percentage)))
                 table[i, 0].set_text_props(weight='bold', color='white')
-            #table.scale()
             table.auto_set_font_size(False)
-            table.set_fontsize(20)
+            table.set_fontsize(15)
             
 
             #! test delete frame
