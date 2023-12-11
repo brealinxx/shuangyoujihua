@@ -5,12 +5,14 @@ from PyQt5.QtChart import QChart, QChartView, QPieSeries
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 from matplotlib.gridspec import GridSpec
 import matplotlib.colors as mcolors
 import openpyxl
 import os
 from io import BytesIO
 import numpy as np
+from PIL import Image, ImageDraw
 
 class Window(QWidget):
     def __init__(self):
@@ -106,11 +108,13 @@ class Window(QWidget):
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
-            fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72))
+            fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
             gs = GridSpec(6, 3)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
             ratio = [35,35,15,5,15]
+            bg_image = mpimg.imread('path_to_your_background_image.png')
+            axs.imshow(bg_image, aspect='auto', extent=[0, 1920 / 72, 0, 12000 / 72])
 
             def GetExcelData(definedName):
                 # 通过定义名称获取单元格对象
@@ -231,12 +235,12 @@ class Window(QWidget):
             #! 7 调整位置
             sheet = fig.add_subplot(gs[5, :])
             tasks_and_scores = {}
-            for row in sheets.iter_rows(min_row=4, values_only=True):  # 从第二行开始遍历，假设第一行是标题
+            for row in sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score = row[5], row[4], row[25]
                 if name not in tasks_and_scores:
-                    tasks_and_scores[name] = {task: score}  # 如果姓名不在字典中，创建一个新的任务和评分字典
+                    tasks_and_scores[name] = {task: score}  
                 else:
-                    tasks_and_scores[name][task] = score  # 如果姓名已经在字典中，添加新的任务和评分
+                    tasks_and_scores[name][task] = score  
 
             percentages1 = []  
             data = [['评分', '任务', '姓名']]
@@ -305,13 +309,24 @@ class Window(QWidget):
         if not self.image_generated:  # 如果没有生成图片
             QMessageBox.warning(self, "警告", "请先「生成」图片", QMessageBox.StandardButton.Ok)
             return
-        
+
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getSaveFileName(self, "保存文件", "", "PNG文件 (*.png)")
         if file_path:
             pixmap = self.image_label.pixmap()
-            pixmap.save(file_path)
-            self.status_label.setText("已导出到：" + file_path)
+
+            background = Image.new('RGB', (pixmap.width(), pixmap.height()), color=(3, 32, 71))
+            
+            img = pixmap.toImage()
+            img.save("temp_image.png")
+            
+            foreground = Image.open("temp_image.png")
+            background.paste(foreground, (0, 0))
+            
+            background.save(file_path) 
+            os.remove("temp_image.png")
+            
+            self.status_label.setText("已导出到:" + file_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
