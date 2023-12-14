@@ -1,7 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QFileDialog, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QMessageBox, QGridLayout,QScrollArea
-from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtCore import QTimer
-from PyQt5.QtChart import QChart, QChartView, QPieSeries
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -113,8 +112,6 @@ class Window(QWidget):
             gs = GridSpec(6, 3)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
             ratio = [35,35,15,5,15]
-            bg_image = mpimg.imread('path_to_your_background_image.png')
-            axs.imshow(bg_image, aspect='auto', extent=[0, 1920 / 72, 0, 12000 / 72])
 
             def GetExcelData(definedName):
                 # 通过定义名称获取单元格对象
@@ -312,20 +309,20 @@ class Window(QWidget):
 
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getSaveFileName(self, "保存文件", "", "PNG文件 (*.png)")
+
         if file_path:
             pixmap = self.image_label.pixmap()
+            bg_pixmap = QPixmap('./background.png') #! change this path
 
-            background = Image.new('RGB', (pixmap.width(), pixmap.height()), color=(3, 32, 71))
-            
-            img = pixmap.toImage()
-            img.save("temp_image.png")
-            
-            foreground = Image.open("temp_image.png")
-            background.paste(foreground, (0, 0))
-            
-            background.save(file_path) 
-            os.remove("temp_image.png")
-            
+            combined_pixmap = QPixmap(pixmap.size())
+            combined_pixmap.fill(Qt.transparent)
+
+            painter = QPainter(combined_pixmap)
+            painter.drawPixmap(0, 0, pixmap)  
+            painter.drawPixmap(0, 0, bg_pixmap)  
+            painter.end()
+
+            combined_pixmap.save(file_path) 
             self.status_label.setText("已导出到:" + file_path)
 
 if __name__ == "__main__":

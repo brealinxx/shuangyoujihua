@@ -3,6 +3,7 @@ import matplotlib.pyplot
 import shutil
 import launch 
 import openpyxl
+import os
 
 
 # print(matplotlib.matplotlib_fname())
@@ -31,5 +32,6 @@ for name, tasks in tasks_and_scores.items():
     print(f"{name}:")
     for task, score in tasks.items():
         print(f"任务: {task}, 评分: {score}")
+print(os.path.exists('/Users/brealin/DEV/shuangyoujihua/background.png'))
 
 #print(GetExcelData("党建项目执行力得分"))
