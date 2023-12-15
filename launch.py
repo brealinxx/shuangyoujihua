@@ -11,7 +11,6 @@ import openpyxl
 import os
 from io import BytesIO
 import numpy as np
-from PIL import Image, ImageDraw
 
 class Window(QWidget):
     def __init__(self):
@@ -90,11 +89,52 @@ class Window(QWidget):
             QMessageBox.warning(self, "警告", "文件路径错误，请选择一个有效的 Excel 文件", QMessageBox.StandardButton.Ok)
         # self.status_label.setText("文本框内容：" + self.path_input.text())
     
-    def image_generate_button_click(self):
-        # todo: image generate here
+    def CreatePie(self, subplot,value,title):
+        data = {'部分':['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],'占比':value}
+        df = pd.DataFrame(data)
+        patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=self.colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+        plt.setp(texts, color='none')
+        subplot.set_title(title, loc='left', color='blue')
+        plt.axis('equal')
+    
+    def CreateHBarCharts(self,subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
+        # subplot.set_xlim(0, 60)  # 设置x轴范围
+        lefts = np.arange(len(self.categories)) * set_yticks
+        for i, (value, category) in enumerate(zip(value, self.categories)):
+            bar = subplot.barh(lefts[i], value, height=bar_height, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(value/100)))
+
+        subplot.set_ylim(set_ylim1, set_ylim2)
+        subplot.set_yticks(lefts + 0.5)
+        subplot.set_yticklabels(self.categories)
+        subplot.set_title(title, loc='left', color='blue')
+        subplot.tick_params(bottom=False)
+        # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
+    
+    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title):
+        subplot.set_ylabel('百分比 (%)')
+        subplot.set_ylim(0, 100) 
+        bottoms = np.arange(len(self.categories)) * set_xticks
+        for i, (val, category) in enumerate(zip(value, self.categories)):
+            bar = subplot.bar(bottoms[i], val, width=bar_width, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(val/100)), edgecolor='none')
+            # subplot.axhline(val, linestyle='--', color='gray') 
+        subplot.set_xlim(set_xlim1, set_xlim2)
+        subplot.set_xticks(bottoms)
+        subplot.set_xticklabels(self.categories, rotation=45)
+        subplot.set_title(title, loc='left', color='blue')
+        subplot.tick_params(left=False)
+        subplot.grid(axis='y') 
+
+    class ColorMapping:
         def ColorTrans(r,g,b,a):
             return (r/255,g/255,b/255,a)
         
+        colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
+        cmap = mcolors.ListedColormap(colors)
+        bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
+        norm = mcolors.BoundaryNorm(bounds, cmap.N)
+    
+    def image_generate_button_click(self):
+        # todo: image generate here
         if not self.file_path:
             QMessageBox.warning(self, "警告", "请先「选择文件」", QMessageBox.StandardButton.Ok)
             return
@@ -102,8 +142,8 @@ class Window(QWidget):
         if self.file_path:
             df = pd.read_excel(self.file_path)
             workbook = openpyxl.load_workbook(self.file_path, data_only=True)
-            sheets = workbook.active
-            colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
+            self.sheets = workbook.active
+            self.colors = [Window.ColorMapping.ColorTrans(211,12,18,1.000), Window.ColorMapping.ColorTrans(242,92,5,1.000), Window.ColorMapping.ColorTrans(242,206,27,1.000), Window.ColorMapping.ColorTrans(15,113,242,1), Window.ColorMapping.ColorTrans(13,242,5,1.000)]
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
@@ -111,7 +151,8 @@ class Window(QWidget):
             axs.axis('off') 
             gs = GridSpec(6, 3)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
-            ratio = [35,35,15,5,15]
+            self.ratio = [35,35,15,5,15]
+            self.categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
 
             def GetExcelData(definedName):
                 # 通过定义名称获取单元格对象
@@ -124,70 +165,29 @@ class Window(QWidget):
                 sheet = workbook[sheet_name]
                 return sheet[cell_range].value
             
-            def CreatePie(subplot,value,title):
-                data = {'部分':['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],'占比':value}
-                df = pd.DataFrame(data)
-                patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
-                plt.setp(texts, color='none')
-                subplot.set_title(title, loc='left', color='blue')
-                plt.axis('equal')
-
-            def CreateHBarCharts(subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
-                categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
-                # subplot.set_xlim(0, 60)  # 设置x轴范围
-                lefts = np.arange(len(categories)) * set_yticks
-                cmap = mcolors.ListedColormap(colors)
-                bounds = [0, 0.6, 0.75, 0.9, 1, 1]
-                norm = mcolors.BoundaryNorm(bounds, cmap.N)
-                for i, (value, category) in enumerate(zip(value, categories)):
-                    bar = subplot.barh(lefts[i], value, height=bar_height, color=cmap(norm(value/100)))
-
-                subplot.set_ylim(set_ylim1, set_ylim2)
-                subplot.set_yticks(lefts + 0.5)
-                subplot.set_yticklabels(categories)
-                subplot.set_title(title, loc='left', color='blue')
-                subplot.tick_params(bottom=False)
-                # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
-                
-            def CreateBarCharts(subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title):
-                categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
-                subplot.set_ylabel('百分比 (%)')
-                subplot.set_ylim(0, 100) 
-                bottoms = np.arange(len(categories)) * set_xticks
-                for i, (val, category) in enumerate(zip(value, categories)):
-                    bar = subplot.bar(bottoms[i], val, width=bar_width, color=colors[i], edgecolor='none')
-                    # subplot.axhline(val, linestyle='--', color='gray') 
-                subplot.set_xlim(set_xlim1, set_xlim2)
-                subplot.set_xticks(bottoms)
-                subplot.set_xticklabels(categories, rotation=45)
-                subplot.set_title(title, loc='left', color='blue')
-                subplot.tick_params(left=False)
-                subplot.grid(axis='y') 
-
             #todo data mapping
             values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
-            CreatePie(axs[0][0],values1,"党建考核")
+            self.CreatePie(axs[0][0],values1,"党建考核")
 
             values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
-            CreatePie(axs[0][2],values2,"信息化建设考核")
+            self.CreatePie(axs[0][2],values2,"信息化建设考核")
 
             values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
-            CreatePie(axs[1][0],values3,"立德树人考核")
+            self.CreatePie(axs[1][0],values3,"立德树人考核")
 
             values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
-            CreatePie(axs[1][2],values4,"社会服务能力考核")
+            self.CreatePie(axs[1][2],values4,"社会服务能力考核")
 
-            categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
-            CreateHBarCharts(axs[1][1],values5,-1,2,3,2,'整体考核')
+            self.CreateHBarCharts(axs[1][1],values5,-1,2,3,2,'整体考核')
             values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
-            CreateHBarCharts(axs[2][0],values6,-1,2,3,2,'治理体系考核')
+            self.CreateHBarCharts(axs[2][0],values6,-1,2,3,2,'治理体系考核')
             
             #! 3
-            CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
-            CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
-            CreateBarCharts(axs[3][1],values2,-1,2,7,3,'国际交流合作考核')
-            CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(axs[3][1],values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
 
 
             #! 比例问题
@@ -199,9 +199,6 @@ class Window(QWidget):
             x_positions = [0, 0.35, 0.7]  # 方块的x坐标
             y_position = 0.5 # 方块的y坐标
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
-            cmap = mcolors.ListedColormap(colors)
-            bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
-            norm = mcolors.BoundaryNorm(bounds, cmap.N)
             percentages = [0.1, 0.6, 0.9]  #! 模拟的百分比数据
 
             def CreateRectCharts(subplot, box_widthReduce ,textXPos, namePos):
@@ -210,7 +207,7 @@ class Window(QWidget):
                     y = y_position
 
                     # 创建带有文字的方块，并应用颜色映射
-                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, color=cmap(norm(percentages[i])))
+                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i])))
                     subplot.add_patch(rect)
                     subplot.text(x + box_width / 2 - textXPos, y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=12)
 
@@ -221,18 +218,18 @@ class Window(QWidget):
             
             
             #! 5
+            # todo
             # axs.append([fig.add_subplot(gs[5, :])])
             # CreateBarCharts(axs[5][0],values2,-1,2,7,3,'国际交流合作考核')
-
             
             #! 6
-
-
+            # in export method
+                
 
             #! 7 调整位置
             sheet = fig.add_subplot(gs[5, :])
             tasks_and_scores = {}
-            for row in sheets.iter_rows(min_row=4, values_only=True): 
+            for row in self.sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score = row[5], row[4], row[25]
                 if name not in tasks_and_scores:
                     tasks_and_scores[name] = {task: score}  
@@ -247,15 +244,12 @@ class Window(QWidget):
                         data.append([score, task, name])  
                         percentages1.append(score)
             
-            bounds1 = [0, 60, 75, 90, 100, 1000]
-            norm1 = mcolors.BoundaryNorm(bounds1, cmap.N)
-
             table = sheet.table(cellText=data, colWidths=[0.03,0.45,0.1], loc='center', cellLoc='center')
             table.scale(2, 2)
             sheet.set_xlim(0, 1)
             sheet.set_ylim(0, 2)
             for i, percentage in enumerate(percentages1, start=1):
-                table[i, 0].set_facecolor(cmap(norm1(percentage)))
+                table[i, 0].set_facecolor(Window.ColorMapping.cmap(Window.ColorMapping.norm(percentage)))
                 table[i, 0].set_text_props(weight='bold', color='white')
             table.auto_set_font_size(False)
             table.set_fontsize(15)
@@ -308,11 +302,12 @@ class Window(QWidget):
             return
 
         file_dialog = QFileDialog()
+        # first
         file_path, _ = file_dialog.getSaveFileName(self, "保存文件", "", "PNG文件 (*.png)")
 
         if file_path:
             pixmap = self.image_label.pixmap()
-            bg_pixmap = QPixmap('./background.png') #! change this path
+            bg_pixmap = QPixmap('./background.png') #! change this path and size
 
             combined_pixmap = QPixmap(pixmap.size())
             combined_pixmap.fill(Qt.transparent)
@@ -324,6 +319,43 @@ class Window(QWidget):
 
             combined_pixmap.save(file_path) 
             self.status_label.setText("已导出到:" + file_path)
+        else:
+            return
+        
+        # second
+        leader_file_path, _ = QFileDialog.getSaveFileName(self, "保存牵头人考核指标文件", "", "PNG文件 (*.png)")
+        
+        buffer_leaderPic = BytesIO()
+        num_rows = sum(1 for _ in self.sheets.iter_rows(min_row=4, values_only=True))
+        cols = 3
+        gs1 = GridSpec(num_rows, cols)
+        fig1, axs1 = plt.subplots(figsize=(1920 / 72, 6480 / 72))
+        axs1.axis('off') 
+        gs1.update(wspace=.99, hspace=.99)
+
+
+        row_index = 0
+        for row in self.sheets.iter_rows(min_row=4, values_only=True): 
+            name = row[5] # taskCompleteScore, targetComplateScore, fundUsedSCore, docsScore, execScore 
+            scores = [row[13], row[15], row[17], row[19], row[21]]
+            percentages = [score / r * 100 for score, r in zip(scores, self.ratio)]
+
+            current_row = row_index // cols
+            current_col = row_index % cols
+
+            ax = fig1.add_subplot(gs1[current_row, current_col])  
+            self.CreateBarCharts(ax,percentages,-1,2,7,3,f'{name}')  
+            row_index += 1
+
+        plt.savefig(buffer_leaderPic, format='png')
+        buffer_leaderPic.seek(0)
+        self.pixmap1 = QPixmap()
+        self.pixmap1.loadFromData(buffer_leaderPic.getvalue())
+        buffer_leaderPic.close()
+        
+        if leader_file_path:
+            self.pixmap1.save(leader_file_path)
+            self.status_label.setText("第一张图已导出到: " + file_path + "\n第二张图已导出到: " + leader_file_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
