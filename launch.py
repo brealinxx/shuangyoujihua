@@ -92,7 +92,9 @@ class Window(QWidget):
     def CreatePie(self, subplot,value,title):
         data = {'部分':['任务完成得分', '目标达成得分', '资金使用得分', '文档规范性得分', '项目执行力得分'],'占比':value}
         df = pd.DataFrame(data)
-        patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=self.colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+        norm = mcolors.Normalize(vmin=0, vmax=max(df['占比']))
+        colors = [Window.ColorMapping.cmap(norm(val)) for val in df['占比']]
+        patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
         plt.setp(texts, color='none')
         subplot.set_title(title, loc='left', color='blue')
         plt.axis('equal')
@@ -179,9 +181,9 @@ class Window(QWidget):
             self.CreatePie(axs[1][2],values4,"社会服务能力考核")
 
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
-            self.CreateHBarCharts(axs[1][1],values5,-1,2,3,2,'整体考核')
+            self.CreateHBarCharts(axs[1][1],values5,-1,2,3,1,'整体考核')
             values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
-            self.CreateHBarCharts(axs[2][0],values6,-1,2,3,2,'治理体系考核')
+            self.CreateHBarCharts(axs[2][0],values6,-1,2,3,1,'治理体系考核')
             
             #! 3
             self.CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
@@ -194,8 +196,7 @@ class Window(QWidget):
 
 
             box_width = 0.45
-            box_height = 0.4
-            spacing = 0.1  # 方块之间的间距
+            box_height = 0.1
             x_positions = [0, 0.35, 0.7]  # 方块的x坐标
             y_position = 0.5 # 方块的y坐标
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
@@ -267,7 +268,7 @@ class Window(QWidget):
             sheet.axis('off')
             
 
-            gs.update(wspace=.8, hspace=.9) # 调整整体间距
+            gs.update(wspace=.8, hspace=.7) # 调整整体间距
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
@@ -328,11 +329,10 @@ class Window(QWidget):
         buffer_leaderPic = BytesIO()
         num_rows = sum(1 for _ in self.sheets.iter_rows(min_row=4, values_only=True))
         cols = 3
-        gs1 = GridSpec(num_rows, cols)
-        fig1, axs1 = plt.subplots(figsize=(1920 / 72, 6480 / 72))
+        #print(num_rows)
+        gs1 = GridSpec(num_rows - 80, cols, wspace=0.5, hspace=0.99)
+        fig1, axs1 = plt.subplots(figsize=(20, 110))
         axs1.axis('off') 
-        gs1.update(wspace=.99, hspace=.99)
-
 
         row_index = 0
         for row in self.sheets.iter_rows(min_row=4, values_only=True): 
