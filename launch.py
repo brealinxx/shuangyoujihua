@@ -96,7 +96,7 @@ class Window(QWidget):
         colors = [Window.ColorMapping.cmap(norm(val)) for val in df['占比']]
         patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
         plt.setp(texts, color='none')
-        subplot.set_title(title, loc='left', color='blue')
+        subplot.set_title(title, loc='left',fontsize=80,color='white')
         plt.axis('equal')
     
     def CreateHBarCharts(self,subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
@@ -107,8 +107,8 @@ class Window(QWidget):
 
         subplot.set_ylim(set_ylim1, set_ylim2)
         subplot.set_yticks(lefts + 0.5)
-        subplot.set_yticklabels(self.categories)
-        subplot.set_title(title, loc='left', color='blue')
+        subplot.set_yticklabels(self.categories,fontsize=15, color='yellow')
+        subplot.set_title(title, loc='left', fontsize=60,color='white')
         subplot.tick_params(bottom=False)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
     
@@ -121,8 +121,8 @@ class Window(QWidget):
             # subplot.axhline(val, linestyle='--', color='gray') 
         subplot.set_xlim(set_xlim1, set_xlim2)
         subplot.set_xticks(bottoms)
-        subplot.set_xticklabels(self.categories, rotation=45)
-        subplot.set_title(title, loc='left', color='blue')
+        subplot.set_xticklabels(self.categories, rotation=45,fontsize=15, color='yellow')
+        subplot.set_title(title, fontsize=60,color='white')
         subplot.tick_params(left=False)
         subplot.grid(axis='y') 
 
@@ -151,8 +151,8 @@ class Window(QWidget):
             buffer = BytesIO()
             fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
-            gs = GridSpec(6, 3)
-            axs = [[fig.add_subplot(gs[i, j]) for j in range(3)] for i in range(6)]
+            gs = GridSpec(7, 5)
+            axs = [[fig.add_subplot(gs[i, j]) for j in range(5)] for i in range(7)]
             self.ratio = [35,35,15,5,15]
             self.categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
 
@@ -169,27 +169,27 @@ class Window(QWidget):
             
             #todo data mapping
             values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
-            self.CreatePie(axs[0][0],values1,"党建考核")
+            self.CreatePie(fig.add_subplot(gs[0, 0:2]),values1,"党建考核")
 
             values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
-            self.CreatePie(axs[0][2],values2,"信息化建设考核")
+            self.CreatePie(fig.add_subplot(gs[0, 3:5]),values2,"信息化建设考核")
 
             values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
-            self.CreatePie(axs[1][0],values3,"立德树人考核")
+            self.CreatePie(fig.add_subplot(gs[2, 0:2]),values3,"立德树人考核")
 
             values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
-            self.CreatePie(axs[1][2],values4,"社会服务能力考核")
+            self.CreatePie(fig.add_subplot(gs[2, 3:5]),values4,"社会服务能力考核")
 
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
-            self.CreateHBarCharts(axs[1][1],values5,-1,2,3,1,'整体考核')
+            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),values5,-1,2,3,1,'整体考核')
             values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
-            self.CreateHBarCharts(axs[2][0],values6,-1,2,3,1,'治理体系考核')
+            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:2]),values6,-1,2,3,1,'治理体系考核')
             
             #! 3
-            self.CreateBarCharts(axs[2][2],values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(axs[3][0],values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(axs[3][1],values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(axs[3][2],values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),values2,-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),values2,-1,2,7,3,'国际交流合作考核')
 
 
             #! 比例问题
@@ -213,9 +213,9 @@ class Window(QWidget):
                     subplot.text(x + box_width / 2 - textXPos, y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=12)
 
             #! 4
-            CreateRectCharts(axs[4][0],0.2,0.08,0)
-            CreateRectCharts(axs[4][2],0.2,0.08,6)
-            CreateRectCharts(axs[4][1],0.2,0.08,3)
+            CreateRectCharts(axs[5][0],0.2,0.08,0)
+            CreateRectCharts(axs[5][4],0.2,0.08,6)
+            CreateRectCharts(axs[5][2],0.2,0.08,3)
             
             
             #! 5
@@ -228,7 +228,7 @@ class Window(QWidget):
                 
 
             #! 7 调整位置
-            sheet = fig.add_subplot(gs[5, :])
+            sheet = fig.add_subplot(gs[6, :])
             tasks_and_scores = {}
             for row in self.sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score = row[5], row[4], row[25]
@@ -257,18 +257,36 @@ class Window(QWidget):
             
 
             #! test delete frame
+            axs[0][0].axis('off')
             axs[0][1].axis('off')
+            axs[0][2].axis('off')
+            axs[0][3].axis('off')
+            axs[0][4].axis('off')
+            axs[1][0].axis('off')
+            axs[1][4].axis('off')
+            axs[2][0].axis('off')
             axs[2][1].axis('off')
-            axs[4][0].axis('off')
+            axs[2][2].axis('off')
+            axs[2][3].axis('off')
+            axs[2][4].axis('off')
+
+            axs[3][2].axis('off')
+            axs[3][4].axis('off')
             axs[4][1].axis('off')
-            axs[4][2].axis('off')
+            axs[4][3].axis('off')
             axs[5][0].axis('off')
             axs[5][1].axis('off')
             axs[5][2].axis('off')
+            axs[5][3].axis('off')
+            axs[5][4].axis('off')
+
+            axs[6][0].axis('off')
+            axs[6][1].axis('off')
+            axs[6][2].axis('off')
             sheet.axis('off')
             
 
-            gs.update(wspace=.8, hspace=.7) # 调整整体间距
+            gs.update(wspace=.4, hspace=.5) # 调整整体间距
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
