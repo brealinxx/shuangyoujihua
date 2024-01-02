@@ -107,7 +107,7 @@ class Window(QWidget):
 
         subplot.set_ylim(set_ylim1, set_ylim2)
         subplot.set_yticks(lefts + 0.5)
-        subplot.set_yticklabels(self.categories,fontsize=15, color='yellow')
+        subplot.set_yticklabels(self.categories,fontsize=25, color='yellow')
         subplot.set_title(title, loc='left', fontsize=60,color='white')
         subplot.tick_params(bottom=False)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
@@ -132,7 +132,7 @@ class Window(QWidget):
         
         colors = [ColorTrans(211,12,18,1.000), ColorTrans(242,92,5,1.000), ColorTrans(242,206,27,1.000), ColorTrans(15,113,242,1), ColorTrans(13,242,5,1.000)]
         cmap = mcolors.ListedColormap(colors)
-        bounds = [0, 0.2, 0.4, 0.6, 0.8, 1]
+        bounds = [0, 0.6, 0.75, 0.9, 1, 1]
         norm = mcolors.BoundaryNorm(bounds, cmap.N)
     
     def image_generate_button_click(self):
@@ -167,55 +167,72 @@ class Window(QWidget):
                 sheet = workbook[sheet_name]
                 return sheet[cell_range].value
             
+            def GetIntegerCount(renwuwancheng,mubiaodacheng,zijinshiyong,wendangguifanxing,xiangmuzhixingli):
+                return [GetExcelData(renwuwancheng),GetExcelData(mubiaodacheng),GetExcelData(zijinshiyong),GetExcelData(wendangguifanxing),GetExcelData(xiangmuzhixingli)]
+            
+            def GetIntegerPercentage(values):
+                return [(b / m * 100) for b , m in zip(values,self.ratio)]
+
             #todo data mapping
-            values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
+            
+            #values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
+            values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[0, 0:2]),values1,"党建考核")
 
-            values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
+            #values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
+            values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[0, 3:5]),values2,"信息化建设考核")
 
-            values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
+            #values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
+            values3 = GetIntegerCount("立德树人任务完成得分","立德树人目标达成得分","立德树人资金使用得分","立德树人文档规范性得分","立德树人项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[2, 0:2]),values3,"立德树人考核")
 
-            values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
+            #values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
+            values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[2, 3:5]),values4,"社会服务能力考核")
 
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
             self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),values5,-1,2,3,1,'整体考核')
-            values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
-            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:2]),values6,-1,2,3,1,'治理体系考核')
+            #values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
+            values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
+            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:2]),GetIntegerPercentage(values6),-1,2,3,1,'治理体系考核')
             
             #! 3
-            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),values2,-1,2,7,3,'国际交流合作考核')
-            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),values2,-1,2,7,3,'国际交流合作考核')
+            values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
+            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核')
+            values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
+            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核')
+            values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
+            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核')
+            values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
+            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核')
 
 
             #! 比例问题
+            def ConvertCube(values):
+                return sum(([b / m for b, m in zip(values, self.ratio)])) / 5
 
-
-            box_width = 0.45
-            box_height = 0.1
-            x_positions = [0, 0.35, 0.7]  # 方块的x坐标
-            y_position = 0.5 # 方块的y坐标
+            box_width = 0.35
+            box_height = 0.07
+            x_positions = [0, 0.35, 0.7] 
+            y_position = 0.5
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
-            percentages = [0.1, 0.6, 0.9]  #! 模拟的百分比数据
+            percentages = [ConvertCube(values6), ConvertCube(values1), ConvertCube(values7),ConvertCube(values3),ConvertCube(values4),ConvertCube(values2),ConvertCube(values9),ConvertCube(values8),ConvertCube(values10)]
 
             def CreateRectCharts(subplot, box_widthReduce ,textXPos, namePos):
                 for i in range(3):
-                    x = x_positions[i] # 计算每个方块的位置
+                    subplot.set_facecolor('none')
+                    subplot.axis('off')
+                    x = x_positions[i]
                     y = y_position
-
-                    # 创建带有文字的方块，并应用颜色映射
-                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i])))
+                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, facecolor=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i + namePos])))
                     subplot.add_patch(rect)
-                    subplot.text(x + box_width / 2 - textXPos, y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=12)
-
+                    subplot.text(x + box_width / 2 - textXPos , y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=10)
+                
             #! 4
-            CreateRectCharts(axs[5][0],0.2,0.08,0)
-            CreateRectCharts(axs[5][4],0.2,0.08,6)
-            CreateRectCharts(axs[5][2],0.2,0.08,3)
+            CreateRectCharts(fig.add_subplot(gs[5, 0:1]),0.07,0.04,0)
+            CreateRectCharts(fig.add_subplot(gs[5, 4:5]),0.07,0.04,6)
+            CreateRectCharts(fig.add_subplot(gs[5, 2:3]),0.07,0.04,3)
             
             
             #! 5
