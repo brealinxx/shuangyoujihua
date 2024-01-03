@@ -112,16 +112,18 @@ class Window(QWidget):
         subplot.tick_params(bottom=False)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
     
-    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title):
+    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title,x_labels = None):
         subplot.set_ylabel('百分比 (%)')
         subplot.set_ylim(0, 100) 
-        bottoms = np.arange(len(self.categories)) * set_xticks
-        for i, (val, category) in enumerate(zip(value, self.categories)):
+        bottoms = np.arange(len(value)) * set_xticks
+        for i, (val, category) in enumerate(zip(value, x_labels)):
             bar = subplot.bar(bottoms[i], val, width=bar_width, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(val/100)), edgecolor='none')
             # subplot.axhline(val, linestyle='--', color='gray') 
         subplot.set_xlim(set_xlim1, set_xlim2)
-        subplot.set_xticks(bottoms)
-        subplot.set_xticklabels(self.categories, rotation=45,fontsize=15, color='yellow')
+        if x_labels:
+            subplot.set_xticks(bottoms)
+            subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
+
         subplot.set_title(title, fontsize=60,color='white')
         subplot.tick_params(left=False)
         subplot.grid(axis='y') 
@@ -142,17 +144,17 @@ class Window(QWidget):
             return
 
         if self.file_path:
-            df = pd.read_excel(self.file_path)
             workbook = openpyxl.load_workbook(self.file_path, data_only=True)
-            self.sheets = workbook.active
+            self.sheets = workbook['sheet']
+            sheetTest = workbook['test']
             self.colors = [Window.ColorMapping.ColorTrans(211,12,18,1.000), Window.ColorMapping.ColorTrans(242,92,5,1.000), Window.ColorMapping.ColorTrans(242,206,27,1.000), Window.ColorMapping.ColorTrans(15,113,242,1), Window.ColorMapping.ColorTrans(13,242,5,1.000)]
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
             fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
-            gs = GridSpec(7, 5)
-            axs = [[fig.add_subplot(gs[i, j]) for j in range(5)] for i in range(7)]
+            gs = GridSpec(9, 5)
+            axs = [[fig.add_subplot(gs[i, j]) for j in range(5)] for i in range(9)]
             self.ratio = [35,35,15,5,15]
             self.categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
 
@@ -174,38 +176,33 @@ class Window(QWidget):
                 return [(b / m * 100) for b , m in zip(values,self.ratio)]
 
             #todo data mapping
-            
-            #values1 = [GetExcelData("党建任务完成得分"), GetExcelData("党建目标达成得分"), GetExcelData("党建资金使用得分"), GetExcelData("党建文档规范性得分"), GetExcelData("党建项目执行力得分")]
             values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[0, 0:2]),values1,"党建考核")
 
-            #values2 = [GetExcelData('信息化建设任务完成得分'), GetExcelData('信息化建设目标达成得分'), GetExcelData('信息化建设资金使用得分'), GetExcelData('信息化建设文档规范性得分'), GetExcelData('信息化建设项目执行力得分')]
             values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[0, 3:5]),values2,"信息化建设考核")
 
-            #values3 = [GetExcelData('立德树人任务完成得分'), GetExcelData('立德树人目标达成得分'), GetExcelData('立德树人资金使用得分'), GetExcelData('立德树人文档规范性得分'), GetExcelData('立德树人项目执行力得分')]
             values3 = GetIntegerCount("立德树人任务完成得分","立德树人目标达成得分","立德树人资金使用得分","立德树人文档规范性得分","立德树人项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[2, 0:2]),values3,"立德树人考核")
 
-            #values4 = [GetExcelData('社会服务任务完成得分'), GetExcelData('社会服务目标达成得分'), GetExcelData('社会服务资金使用得分'), GetExcelData('社会服务文档规范性得分'), GetExcelData('社会服务项目执行力得分')]
             values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[2, 3:5]),values4,"社会服务能力考核")
 
             values5 = [20, 30, 25, 15, 10]  #! 对应数据
             self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),values5,-1,2,3,1,'整体考核')
-            #values6 = [(GetExcelData('治理体系任务完成得分')/35) * 100, (GetExcelData('治理体系目标达成得分')/35) * 100, (GetExcelData('治理体系资金使用得分')/15) * 100, (GetExcelData('治理体系文档规范性得分')/5) * 100, (GetExcelData('治理体系项目执行力得分')/10) * 100]
+
             values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
             self.CreateHBarCharts(fig.add_subplot(gs[3, 0:2]),GetIntegerPercentage(values6),-1,2,3,1,'治理体系考核')
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核')
+            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核',self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核',self.categories)
             values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核')
+            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核',self.categories)
 
 
             #! 比例问题
@@ -236,16 +233,26 @@ class Window(QWidget):
             
             
             #! 5
-            # todo
-            # axs.append([fig.add_subplot(gs[5, :])])
-            # CreateBarCharts(axs[5][0],values2,-1,2,7,3,'国际交流合作考核')
+            row_start = 2
+            resultVals = []
+            names = []
+            for row_num in range(row_start, sheetTest.max_row + 1):
+                cell_value = sheetTest.cell(row=row_num, column=8).value
+                if cell_value is None:
+                    break
+                resultVals.append(cell_value)
+                names.append(sheetTest.cell(row=row_num, column=1).value)
+            resultVals = [float(val) for val in resultVals]
+            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', names)
             
             #! 6
             # in export method
+            # todo remove white cube && last pics
+            #* tip: add space
                 
 
             #! 7 调整位置
-            sheet = fig.add_subplot(gs[6, :])
+            sheet = fig.add_subplot(gs[8, :])
             tasks_and_scores = {}
             for row in self.sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score = row[5], row[4], row[25]
@@ -364,7 +371,6 @@ class Window(QWidget):
         buffer_leaderPic = BytesIO()
         num_rows = sum(1 for _ in self.sheets.iter_rows(min_row=4, values_only=True))
         cols = 3
-        #print(num_rows)
         gs1 = GridSpec(num_rows - 80, cols, wspace=0.5, hspace=0.99)
         fig1, axs1 = plt.subplots(figsize=(20, 110))
         axs1.axis('off') 
@@ -379,7 +385,7 @@ class Window(QWidget):
             current_col = row_index % cols
 
             ax = fig1.add_subplot(gs1[current_row, current_col])  
-            self.CreateBarCharts(ax,percentages,-1,2,7,3,f'{name}')  
+            self.CreateBarCharts(ax,percentages,-1,2,7,3,f'{name}',self.categories)  
             row_index += 1
 
         plt.savefig(buffer_leaderPic, format='png')
