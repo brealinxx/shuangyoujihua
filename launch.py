@@ -124,7 +124,7 @@ class Window(QWidget):
             subplot.set_xticks(bottoms)
             subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
 
-        subplot.set_title(title, fontsize=60,color='white')
+        subplot.set_title(title, fontsize=50,color='white')
         subplot.tick_params(left=False)
         subplot.grid(axis='y') 
 
@@ -146,7 +146,7 @@ class Window(QWidget):
         if self.file_path:
             workbook = openpyxl.load_workbook(self.file_path, data_only=True)
             self.sheets = workbook['sheet']
-            sheetTest = workbook['test']
+            self.sheetTest = workbook['test']
             self.colors = [Window.ColorMapping.ColorTrans(211,12,18,1.000), Window.ColorMapping.ColorTrans(242,92,5,1.000), Window.ColorMapping.ColorTrans(242,206,27,1.000), Window.ColorMapping.ColorTrans(15,113,242,1), Window.ColorMapping.ColorTrans(13,242,5,1.000)]
 
             # 保存图表为 QPixmap
@@ -231,25 +231,21 @@ class Window(QWidget):
             CreateRectCharts(fig.add_subplot(gs[5, 4:5]),0.07,0.04,6)
             CreateRectCharts(fig.add_subplot(gs[5, 2:3]),0.07,0.04,3)
             
-            
             #! 5
             row_start = 2
             resultVals = []
-            names = []
-            for row_num in range(row_start, sheetTest.max_row + 1):
-                cell_value = sheetTest.cell(row=row_num, column=8).value
+            self.names = []
+            for row_num in range(row_start, self.sheetTest.max_row + 1):
+                cell_value = self.sheetTest.cell(row=row_num, column=8).value
                 if cell_value is None:
                     break
                 resultVals.append(cell_value)
-                names.append(sheetTest.cell(row=row_num, column=1).value)
+                self.names.append(self.sheetTest.cell(row=row_num, column=1).value)
             resultVals = [float(val) for val in resultVals]
-            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', names)
+            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', self.names)
             
             #! 6
-            # in export method
-            # todo remove white cube && last pics
-            #* tip: add space
-                
+            # in export method          
 
             #! 7 调整位置
             sheet = fig.add_subplot(gs[8, :])
@@ -307,6 +303,12 @@ class Window(QWidget):
             axs[6][0].axis('off')
             axs[6][1].axis('off')
             axs[6][2].axis('off')
+            axs[7][0].axis('off')
+            axs[7][1].axis('off')
+            axs[7][2].axis('off')
+            axs[7][3].axis('off')
+            axs[7][4].axis('off')
+            
             sheet.axis('off')
             
 
@@ -340,7 +342,7 @@ class Window(QWidget):
         
         
     def image_export_button_click(self):
-        if not self.image_generated:  # 如果没有生成图片
+        if not self.image_generated: 
             QMessageBox.warning(self, "警告", "请先「生成」图片", QMessageBox.StandardButton.Ok)
             return
 
@@ -367,33 +369,45 @@ class Window(QWidget):
         
         # second
         leader_file_path, _ = QFileDialog.getSaveFileName(self, "保存牵头人考核指标文件", "", "PNG文件 (*.png)")
-        
+        row_start = 2
+        iScore = []
+        jScore = []
+        kScore = []
+        lScore = []
+        mScore = []
+        for row_num in range(row_start, self.sheetTest.max_row + 1):
+            cell_value = self.sheetTest.cell(row=row_num, column=9).value
+            if cell_value is None:
+                break
+            iScore.append(self.sheetTest.cell(row=row_num, column=9).value)
+            jScore.append(self.sheetTest.cell(row=row_num, column=10).value)
+            kScore.append(self.sheetTest.cell(row=row_num, column=11).value)
+            lScore.append(self.sheetTest.cell(row=row_num, column=12).value)
+            mScore.append(self.sheetTest.cell(row=row_num, column=13).value)
         buffer_leaderPic = BytesIO()
-        num_rows = sum(1 for _ in self.sheets.iter_rows(min_row=4, values_only=True))
-        cols = 3
-        gs1 = GridSpec(num_rows - 80, cols, wspace=0.5, hspace=0.99)
-        fig1, axs1 = plt.subplots(figsize=(20, 110))
+        all_scores = [iScore, jScore, kScore, lScore, mScore] 
+        charts_per_row = 3  
+
+        gs1 = GridSpec(14, charts_per_row,wspace=0.5, hspace=0.99)
+        fig1, axs1 = plt.subplots(figsize=(30, 100),facecolor=(3/255, 32/255, 71/255))
         axs1.axis('off') 
 
-        row_index = 0
-        for row in self.sheets.iter_rows(min_row=4, values_only=True): 
-            name = row[5] # taskCompleteScore, targetComplateScore, fundUsedSCore, docsScore, execScore 
-            scores = [row[13], row[15], row[17], row[19], row[21]]
-            percentages = [score / r * 100 for score, r in zip(scores, self.ratio)]
+        for chart_num in range(41):
+            row = chart_num // charts_per_row  
+            col = chart_num % charts_per_row  
 
-            current_row = row_index // cols
-            current_col = row_index % cols
+            ax = fig1.add_subplot(gs1[row, col])
 
-            ax = fig1.add_subplot(gs1[current_row, current_col])  
-            self.CreateBarCharts(ax,percentages,-1,2,7,3,f'{name}',self.categories)  
-            row_index += 1
+            value = [scores[chart_num] for scores in all_scores if chart_num < len(scores)]
+            values = [(i/j) * 100 for i,j in zip(value,[35,35,15,5,10])]
+            self.CreateBarCharts(ax, values, -1,2,7,3, self.names[chart_num], self.categories)
 
         plt.savefig(buffer_leaderPic, format='png')
         buffer_leaderPic.seek(0)
         self.pixmap1 = QPixmap()
         self.pixmap1.loadFromData(buffer_leaderPic.getvalue())
         buffer_leaderPic.close()
-        
+
         if leader_file_path:
             self.pixmap1.save(leader_file_path)
             self.status_label.setText("第一张图已导出到: " + file_path + "\n第二张图已导出到: " + leader_file_path)
