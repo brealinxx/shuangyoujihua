@@ -95,7 +95,7 @@ class Window(QWidget):
         colors = [Window.ColorMapping.cmap(norm(val)) for val in df['占比']]
         patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
         plt.setp(texts, color='none')
-        subplot.set_title(title, loc='left',fontsize=80,color='white')
+        #subplot.set_title(title, loc='left',fontsize=80,color='white')
         plt.axis('equal')
     
     def CreateHBarCharts(self,subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
@@ -107,7 +107,7 @@ class Window(QWidget):
         subplot.set_ylim(set_ylim1, set_ylim2)
         subplot.set_yticks(lefts + 0.5)
         subplot.set_yticklabels(self.categories,fontsize=25, color='yellow')
-        subplot.set_title(title, loc='left', fontsize=60,color='white')
+        #subplot.set_title(title, loc='left', fontsize=60,color='white')
         subplot.tick_params(bottom=False, colors='white', labelsize=30)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
     
@@ -123,7 +123,7 @@ class Window(QWidget):
             subplot.set_xticks(bottoms)
             subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
 
-        subplot.set_title(title, fontsize=50,color='white')
+        #subplot.set_title(title, fontsize=50,color='white')
         subplot.tick_params(left=False, colors='white', labelsize=30)
         subplot.grid(axis='y') 
         subplot.set_facecolor('none')
@@ -179,16 +179,16 @@ class Window(QWidget):
 
             #todo data mapping
             values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 0:2]),values1,"党建考核")
+            self.CreatePie(fig.add_subplot(gs[0, 0:1]),values1,"党建考核")
 
             values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 3:5]),values2,"信息化建设考核")
+            self.CreatePie(fig.add_subplot(gs[0, 4:5]),values2,"信息化建设考核")
 
             values3 = GetIntegerCount("立德树人任务完成得分","立德树人目标达成得分","立德树人资金使用得分","立德树人文档规范性得分","立德树人项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[2, 0:2]),values3,"立德树人考核")
+            self.CreatePie(fig.add_subplot(gs[2, 0:1]),values3,"立德树人考核")
 
             values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[2, 3:5]),values4,"社会服务能力考核")
+            self.CreatePie(fig.add_subplot(gs[2, 4:5]),values4,"社会服务能力考核")
 
             values5 = GetIntegerCount("整体任务完成得分","整体目标达成得分","整体资金使用得分","整体文档规范性得分","整体项目执行力得分")
             self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),GetIntegerPercentage(values5),-1,2,3,1,'整体考核')
@@ -212,7 +212,7 @@ class Window(QWidget):
                 return sum(([b / m for b, m in zip(values, self.ratio)])) / 5
 
             box_width = 0.35
-            box_height = 0.15
+            box_height = 0.2
             x_positions = [0, 0.35, 0.7] 
             y_position = 0.5
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
@@ -226,7 +226,7 @@ class Window(QWidget):
                     y = y_position
                     rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, facecolor=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i + namePos])))
                     subplot.add_patch(rect)
-                    subplot.text(x + box_width / 2 - textXPos , y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=10)
+                    subplot.text(x + box_width / 2 - textXPos , y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=25)
                 
             #! 4
             CreateRectCharts(fig.add_subplot(gs[5, 0:1]),0.07,0.04,0)
@@ -320,6 +320,15 @@ class Window(QWidget):
         
         
     def image_export_button_click(self):
+        def resource_path(relative_path):
+            """获取打包后的资源文件路径"""
+            try:
+                # PyInstaller创建的临时文件夹路径
+                base_path = sys._MEIPASS
+            except Exception:
+                base_path = os.path.abspath(".")
+            return os.path.join(base_path, relative_path)
+        
         if not self.image_generated: 
             QMessageBox.warning(self, "警告", "请先「生成」图片", QMessageBox.StandardButton.Ok)
             return
@@ -330,7 +339,7 @@ class Window(QWidget):
                 
         if file_path:
             pixmap = self.image_label.pixmap()
-            bg_pixmap = QPixmap('./background.png') #! change this path and size
+            bg_pixmap = QPixmap(resource_path('background.png')) #* background.png
 
             combined_pixmap = QPixmap(pixmap.size())
             combined_pixmap.fill(Qt.transparent)

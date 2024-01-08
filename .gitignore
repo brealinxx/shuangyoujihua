@@ -60,7 +60,6 @@ Temporary Items
 problem.txt
 build/
 dist/
-launch.spec
 .DS_Store
 __pycache__/
 
