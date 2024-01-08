@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 import sys
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 from matplotlib.gridspec import GridSpec
 import matplotlib.colors as mcolors
 import openpyxl
@@ -104,12 +103,12 @@ class Window(QWidget):
         lefts = np.arange(len(self.categories)) * set_yticks
         for i, (value, category) in enumerate(zip(value, self.categories)):
             bar = subplot.barh(lefts[i], value, height=bar_height, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(value/100)))
-
+        subplot.set_facecolor('none')
         subplot.set_ylim(set_ylim1, set_ylim2)
         subplot.set_yticks(lefts + 0.5)
         subplot.set_yticklabels(self.categories,fontsize=25, color='yellow')
         subplot.set_title(title, loc='left', fontsize=60,color='white')
-        subplot.tick_params(bottom=False)
+        subplot.tick_params(bottom=False, colors='white', labelsize=30)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
     
     def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title,x_labels = None):
@@ -125,8 +124,9 @@ class Window(QWidget):
             subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
 
         subplot.set_title(title, fontsize=50,color='white')
-        subplot.tick_params(left=False)
+        subplot.tick_params(left=False, colors='white', labelsize=30)
         subplot.grid(axis='y') 
+        subplot.set_facecolor('none')
 
     class ColorMapping:
         def ColorTrans(r,g,b,a):
@@ -151,10 +151,12 @@ class Window(QWidget):
 
             # 保存图表为 QPixmap
             buffer = BytesIO()
-            fig, axs = plt.subplots(figsize=(1920 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
+            fig, axs = plt.subplots(figsize=(3840 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
-            gs = GridSpec(9, 5)
-            axs = [[fig.add_subplot(gs[i, j]) for j in range(5)] for i in range(9)]
+            rowsCount = 13
+            columnsCount = 5
+            gs = GridSpec(rowsCount, columnsCount)
+            axs = [[fig.add_subplot(gs[i, j]) for j in range(columnsCount)] for i in range(rowsCount)]
             self.ratio = [35,35,15,5,15]
             self.categories = ['任务完成率', '目标达成度', '资源使用率', '文档规范性', '项目执行力']
 
@@ -188,15 +190,15 @@ class Window(QWidget):
             values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[2, 3:5]),values4,"社会服务能力考核")
 
-            values5 = [20, 30, 25, 15, 10]  #! 对应数据
-            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),values5,-1,2,3,1,'整体考核')
+            values5 = GetIntegerCount("整体任务完成得分","整体目标达成得分","整体资金使用得分","整体文档规范性得分","整体项目执行力得分")
+            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),GetIntegerPercentage(values5),-1,2,3,1,'整体考核')
 
             values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:2]),GetIntegerPercentage(values6),-1,2,3,1,'治理体系考核')
+            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:3]),GetIntegerPercentage(values6),-1,2,3,1,'治理体系考核')
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 3:4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
             self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核',self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
@@ -210,7 +212,7 @@ class Window(QWidget):
                 return sum(([b / m for b, m in zip(values, self.ratio)])) / 5
 
             box_width = 0.35
-            box_height = 0.07
+            box_height = 0.15
             x_positions = [0, 0.35, 0.7] 
             y_position = 0.5
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
@@ -248,67 +250,43 @@ class Window(QWidget):
             # in export method          
 
             #! 7 调整位置
-            sheet = fig.add_subplot(gs[8, :])
+            sheet = fig.add_subplot(gs[10, :])
             tasks_and_scores = {}
             for row in self.sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score = row[5], row[4], row[25]
-                if name not in tasks_and_scores:
-                    tasks_and_scores[name] = {task: score}  
+                if task not in tasks_and_scores:
+                    tasks_and_scores[task] = {name: score}  
                 else:
-                    tasks_and_scores[name][task] = score  
+                    tasks_and_scores[task][name] = score 
 
-            percentages1 = []  
             data = [['评分', '任务', '姓名']]
-            for name, tasks in tasks_and_scores.items():
-                for task, score in tasks.items():
+            for task, names in tasks_and_scores.items():
+                for name, score in names.items():
                     if task and name:  
                         data.append([score, task, name])  
-                        percentages1.append(score)
             
-            table = sheet.table(cellText=data, colWidths=[0.03,0.45,0.1], loc='center', cellLoc='center')
+            table = sheet.table(cellText=data, colWidths=[0.03,0.5,0.07], loc='center', cellLoc='center')
             table.scale(2, 2)
             sheet.set_xlim(0, 1)
             sheet.set_ylim(0, 2)
-            for i, percentage in enumerate(percentages1, start=1):
-                table[i, 0].set_facecolor(Window.ColorMapping.cmap(Window.ColorMapping.norm(percentage)))
-                table[i, 0].set_text_props(weight='bold', color='white')
             table.auto_set_font_size(False)
-            table.set_fontsize(15)
+            table.set_fontsize(20)           
+            for i in range(1, len(data)): 
+                table[i, 0].set_facecolor(Window.ColorMapping.cmap(Window.ColorMapping.norm(data[i][0])))
+                table[i, 0].set_text_props(weight='bold', color='white')
+                for j in range(len(data[0])): 
+                    table[(i, j)].set_edgecolor('white')
+                    table[(i, j)].set_height(0.08)
+                    if j != 0: 
+                        table[(i, j)].set_facecolor('none')
+                        table[(i, j)].get_text().set_color('white')
+                        
             
 
             #! test delete frame
-            axs[0][0].axis('off')
-            axs[0][1].axis('off')
-            axs[0][2].axis('off')
-            axs[0][3].axis('off')
-            axs[0][4].axis('off')
-            axs[1][0].axis('off')
-            axs[1][4].axis('off')
-            axs[2][0].axis('off')
-            axs[2][1].axis('off')
-            axs[2][2].axis('off')
-            axs[2][3].axis('off')
-            axs[2][4].axis('off')
-
-            axs[3][2].axis('off')
-            axs[3][4].axis('off')
-            axs[4][1].axis('off')
-            axs[4][3].axis('off')
-            axs[5][0].axis('off')
-            axs[5][1].axis('off')
-            axs[5][2].axis('off')
-            axs[5][3].axis('off')
-            axs[5][4].axis('off')
-
-            axs[6][0].axis('off')
-            axs[6][1].axis('off')
-            axs[6][2].axis('off')
-            axs[7][0].axis('off')
-            axs[7][1].axis('off')
-            axs[7][2].axis('off')
-            axs[7][3].axis('off')
-            axs[7][4].axis('off')
-            
+            for i in range(rowsCount):
+                for j in range(columnsCount):
+                    axs[i][j].axis('off')
             sheet.axis('off')
             
 
@@ -349,7 +327,7 @@ class Window(QWidget):
         file_dialog = QFileDialog()
         # first
         file_path, _ = file_dialog.getSaveFileName(self, "保存文件", "", "PNG文件 (*.png)")
-
+                
         if file_path:
             pixmap = self.image_label.pixmap()
             bg_pixmap = QPixmap('./background.png') #! change this path and size
