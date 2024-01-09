@@ -339,7 +339,7 @@ class Window(QWidget):
                 
         if file_path:
             pixmap = self.image_label.pixmap()
-            bg_pixmap = QPixmap(resource_path('background.png')) #* background.png
+            bg_pixmap = QPixmap(resource_path('background_1.png')) #* background.png
 
             combined_pixmap = QPixmap(pixmap.size())
             combined_pixmap.fill(Qt.transparent)
@@ -393,10 +393,21 @@ class Window(QWidget):
         buffer_leaderPic.seek(0)
         self.pixmap1 = QPixmap()
         self.pixmap1.loadFromData(buffer_leaderPic.getvalue())
+
+                
+        bg_pixmap = QPixmap(resource_path('background_2.png'))
+        second_pixmap = QPixmap(self.pixmap1.size())
+
+        painter = QPainter(second_pixmap)
+        painter.drawPixmap(0, 0, self.pixmap1)  
+        painter.drawPixmap(0, 0, bg_pixmap) 
+        painter.end()
+        second_pixmap.save(leader_file_path)
+
         buffer_leaderPic.close()
 
         if leader_file_path:
-            self.pixmap1.save(leader_file_path)
+            second_pixmap.save(leader_file_path)
             self.status_label.setText("第一张图已导出到: " + file_path + "\n第二张图已导出到: " + leader_file_path)
 
 if __name__ == "__main__":

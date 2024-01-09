@@ -5,7 +5,7 @@ a = Analysis(
     ['launch.py'],
     pathex=[],
     binaries=[],
-    datas=[('background.png','.')],
+    datas=[('Assets/background_1.png', '.'), ('Assets/background_2.png', '.')],
     hiddenimports=[
         'PIL',
         'openpyxl',
