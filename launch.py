@@ -111,7 +111,7 @@ class Window(QWidget):
         subplot.tick_params(bottom=False, colors='white', labelsize=30)
         # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
     
-    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title,x_labels = None):
+    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title,titleTrigger, x_labels = None):
         subplot.set_ylabel('百分比 (%)')
         subplot.set_ylim(0, 100) 
         bottoms = np.arange(len(value)) * set_xticks
@@ -123,7 +123,8 @@ class Window(QWidget):
             subplot.set_xticks(bottoms)
             subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
 
-        #subplot.set_title(title, fontsize=50,color='white')
+        if titleTrigger:
+            subplot.set_title(title, fontsize=50,color='white')
         subplot.tick_params(left=False, colors='white', labelsize=30)
         subplot.grid(axis='y') 
         subplot.set_facecolor('none')
@@ -198,13 +199,13 @@ class Window(QWidget):
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',False,self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核',self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核',False,self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核',self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核',False,self.categories)
             values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核',self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核',False,self.categories)
 
 
             #! 比例问题
@@ -244,7 +245,7 @@ class Window(QWidget):
                 resultVals.append(cell_value)
                 self.names.append(self.sheetTest.cell(row=row_num, column=1).value)
             resultVals = [float(val) for val in resultVals]
-            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', self.names)
+            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', False, self.names)
             
             #! 6
             # in export method          
@@ -291,6 +292,7 @@ class Window(QWidget):
             
 
             gs.update(wspace=.4, hspace=.5) # 调整整体间距
+            plt.subplots_adjust(top=.95, bottom=.05, right=.9, left=.1, hspace=0, wspace=0)
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
@@ -387,7 +389,7 @@ class Window(QWidget):
 
             value = [scores[chart_num] for scores in all_scores if chart_num < len(scores)]
             values = [(i/j) * 100 for i,j in zip(value,[35,35,15,5,10])]
-            self.CreateBarCharts(ax, values, -1,2,7,3, self.names[chart_num], self.categories)
+            self.CreateBarCharts(ax, values, -1,2,7,3, self.names[chart_num], True, self.categories)
 
         plt.savefig(buffer_leaderPic, format='png')
         buffer_leaderPic.seek(0)
