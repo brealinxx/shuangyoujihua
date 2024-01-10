@@ -98,33 +98,40 @@ class Window(QWidget):
         #subplot.set_title(title, loc='left',fontsize=80,color='white')
         plt.axis('equal')
     
-    def CreateHBarCharts(self,subplot,value,set_ylim1,set_ylim2,set_yticks,bar_height,title):#! 对应数据
-        # subplot.set_xlim(0, 60)  # 设置x轴范围
-        lefts = np.arange(len(self.categories)) * set_yticks
+    def CreateHBarCharts(self, subplot, value, bar_height, title, titleTrigger):
+        subplot.set_xlim(0, 100)
+        subplot.set_xticks(range(0, 101, 20))
+        lefts = np.arange(len(self.categories))
+        subplot.set_yticks(lefts)
+        subplot.set_yticklabels(self.categories,fontsize=25, color='yellow')
+
         for i, (value, category) in enumerate(zip(value, self.categories)):
             bar = subplot.barh(lefts[i], value, height=bar_height, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(value/100)))
+
         subplot.set_facecolor('none')
-        subplot.set_ylim(set_ylim1, set_ylim2)
-        subplot.set_yticks(lefts + 0.5)
-        subplot.set_yticklabels(self.categories,fontsize=25, color='yellow')
-        #subplot.set_title(title, loc='left', fontsize=60,color='white')
+        subplot.set_ylim(-0.5, 5 - 0.5)
         subplot.tick_params(bottom=False, colors='white', labelsize=30)
-        # ax_middle.tick_params(axis='y', which='both', left=False)  # 设置y轴刻度参数   
+
+        if titleTrigger:
+            subplot.set_title(title, loc='left', fontsize=60,color='white')
+
     
-    def CreateBarCharts(self, subplot,value,set_xlim1,set_xlim2,set_xticks,bar_width,title,titleTrigger, x_labels = None):
+    def CreateBarCharts(self, subplot, value, bar_width, title, titleTrigger, x_labels = None):
+        subplot.set_xlim(-0.5, len(value) - 0.5)
         subplot.set_ylabel('百分比 (%)')
         subplot.set_ylim(0, 100) 
-        bottoms = np.arange(len(value)) * set_xticks
+        plt.yticks(range(0, 101, 20))
+        bottoms = np.arange(len(value))
         for i, (val, category) in enumerate(zip(value, x_labels)):
             bar = subplot.bar(bottoms[i], val, width=bar_width, color=Window.ColorMapping.cmap(Window.ColorMapping.norm(val/100)), edgecolor='none')
             # subplot.axhline(val, linestyle='--', color='gray') 
-        subplot.set_xlim(set_xlim1, set_xlim2)
+
         if x_labels:
             subplot.set_xticks(bottoms)
-            subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
-
+            subplot.set_xticklabels(x_labels, rotation=45, fontsize=10, color='yellow')
         if titleTrigger:
             subplot.set_title(title, fontsize=40,color='white')
+
         subplot.tick_params(left=False, colors='white', labelsize=30)
         subplot.grid(axis='y') 
         subplot.set_facecolor('none')
@@ -192,20 +199,20 @@ class Window(QWidget):
             self.CreatePie(fig.add_subplot(gs[2, 4:5]),values4,"社会服务能力考核")
 
             values5 = GetIntegerCount("整体任务完成得分","整体目标达成得分","整体资金使用得分","整体文档规范性得分","整体项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),GetIntegerPercentage(values5),-1,2,3,1,'整体考核')
+            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),GetIntegerPercentage(values5), .5, '整体考核', False)
 
             values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:3]),GetIntegerPercentage(values6),-1,2,3,1,'治理体系考核')
+            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:4]),GetIntegerPercentage(values6), .5, '治理体系考核', False)
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),-1,2,7,3,'国际交流合作考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),.5,'国际交流合作考核',False,self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),-1,2,7,3,'智能制造专业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),.5,'智能制造专业考核',False,self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),-1,2,7,3,'新能源交通考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),.5,'新能源交通考核',False,self.categories)
             values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),-1,2,7,3,'现代服务业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),.5,'现代服务业考核',False,self.categories)
 
 
             #! 比例问题
@@ -247,7 +254,7 @@ class Window(QWidget):
             resultVals = [float(val) for val in resultVals]
             name_val_dict = dict(zip(self.names, resultVals))
             sorted_dict = dict(sorted(name_val_dict.items(), key=lambda item: item[1]))
-            self.CreateBarCharts(fig.add_subplot(gs[6, :]), list(sorted_dict.values()), -1, 2, 7,3, '牵头人考核', False, list(sorted_dict.keys()))
+            self.CreateBarCharts(fig.add_subplot(gs[6, :]), list(sorted_dict.values()),.5, '牵头人考核', False, list(sorted_dict.keys()))
             
             #! 6
             # in export method          
@@ -314,7 +321,7 @@ class Window(QWidget):
             sheet.axis('off')
             
 
-            gs.update(wspace=.4, hspace=.5) # 调整整体间距
+            gs.update(wspace=.4, hspace=.9) # 调整整体间距
             plt.subplots_adjust(top=.93, bottom=.07, right=.9, left=.1, hspace=0, wspace=0)
             plt.savefig(buffer, format='png')
             buffer.seek(0)
@@ -412,7 +419,7 @@ class Window(QWidget):
 
             value = [scores[chart_num] for scores in all_scores if chart_num < len(scores)]
             values = [(i/j) * 100 for i,j in zip(value,[35,35,15,5,10])]
-            self.CreateBarCharts(ax, values, -1,2,7,3, self.names[chart_num], True, self.categories)
+            self.CreateBarCharts(ax, values, .5, self.names[chart_num], True, self.categories)
 
         plt.savefig(buffer_leaderPic, format='png')
         buffer_leaderPic.seek(0)
