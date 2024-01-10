@@ -350,7 +350,7 @@ class Window(QWidget):
         else:
             QMessageBox.warning(self, "警告", "文件路径为空，请选择一个有效的 Excel 文件", QMessageBox.StandardButton.Ok)
         
-        
+
     def image_export_button_click(self):
         def resource_path(relative_path):
             """获取打包后的资源文件路径"""
