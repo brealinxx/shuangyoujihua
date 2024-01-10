@@ -124,7 +124,7 @@ class Window(QWidget):
             subplot.set_xticklabels(x_labels, rotation=45, fontsize=15, color='yellow')
 
         if titleTrigger:
-            subplot.set_title(title, fontsize=50,color='white')
+            subplot.set_title(title, fontsize=40,color='white')
         subplot.tick_params(left=False, colors='white', labelsize=30)
         subplot.grid(axis='y') 
         subplot.set_facecolor('none')
@@ -180,7 +180,7 @@ class Window(QWidget):
 
             #todo data mapping
             values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 0:1]),values1,"党建考核")
+            self.CreatePie(fig.add_subplot(gs[0:1, 0:1]),values1,"党建考核")
 
             values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
             self.CreatePie(fig.add_subplot(gs[0, 4:5]),values2,"信息化建设考核")
@@ -245,7 +245,9 @@ class Window(QWidget):
                 resultVals.append(cell_value)
                 self.names.append(self.sheetTest.cell(row=row_num, column=1).value)
             resultVals = [float(val) for val in resultVals]
-            self.CreateBarCharts(fig.add_subplot(gs[6, :]), resultVals, -1, 2, 7,3, '牵头人考核', False, self.names)
+            name_val_dict = dict(zip(self.names, resultVals))
+            sorted_dict = dict(sorted(name_val_dict.items(), key=lambda item: item[1]))
+            self.CreateBarCharts(fig.add_subplot(gs[6, :]), list(sorted_dict.values()), -1, 2, 7,3, '牵头人考核', False, list(sorted_dict.keys()))
             
             #! 6
             # in export method          
@@ -254,19 +256,40 @@ class Window(QWidget):
             sheet = fig.add_subplot(gs[10, :])
             tasks_and_scores = {}
             for row in self.sheets.iter_rows(min_row=4, values_only=True): 
-                name, task, score = row[5], row[4], row[25]
+                name, task, score_1, score_2, score_3, score_4, score_5 = row[5], row[4], row[13], row[15], row[17], row[19], row[21]
+                score_1 = 0 if score_1 is None else score_1
+                score_2 = 0 if score_2 is None else score_2
+                score_3 = 0 if score_3 is None else score_3
+                score_4 = 0 if score_4 is None else score_4
+                score_5 = 0 if score_5 is None else score_5
+                score = round((score_1 + score_2 + score_3 + score_4 + score_5) / 100.0, 1)
                 if task not in tasks_and_scores:
                     tasks_and_scores[task] = {name: score}  
                 else:
                     tasks_and_scores[task][name] = score 
 
+            flattened_data = []
+            for task, names_scores in tasks_and_scores.items():
+                for name, score in names_scores.items():
+                    flattened_data.append((task, name, score))
+            sorted_data = sorted(flattened_data, key=lambda x: x[2])
+            sorted_tasks_and_scores = {}
+            for task, name, score in sorted_data:
+                if task not in sorted_tasks_and_scores:
+                    sorted_tasks_and_scores[task] = {name: score}
+                else:
+                    sorted_tasks_and_scores[task][name] = score
+
+            
             data = [['评分', '任务', '姓名']]
-            for task, names in tasks_and_scores.items():
+            for task, names in sorted_tasks_and_scores.items():
                 for name, score in names.items():
                     if task and name:  
-                        data.append([score, task, name])  
-            
+                        data.append([float(score), task, name]) 
+            sorted_data = sorted(flattened_data, key=lambda x: x[2])
+
             table = sheet.table(cellText=data, colWidths=[0.03,0.5,0.07], loc='center', cellLoc='center')
+
             table.scale(2, 2)
             sheet.set_xlim(0, 1)
             sheet.set_ylim(0, 2)
@@ -292,7 +315,7 @@ class Window(QWidget):
             
 
             gs.update(wspace=.4, hspace=.5) # 调整整体间距
-            plt.subplots_adjust(top=.95, bottom=.05, right=.9, left=.1, hspace=0, wspace=0)
+            plt.subplots_adjust(top=.93, bottom=.07, right=.9, left=.1, hspace=0, wspace=0)
             plt.savefig(buffer, format='png')
             buffer.seek(0)
             pixmap = QPixmap()
@@ -385,7 +408,7 @@ class Window(QWidget):
             row = chart_num // charts_per_row  
             col = chart_num % charts_per_row  
 
-            ax = fig1.add_subplot(gs1[row, col])
+            ax = fig1.add_subplot(gs1[row, col])               
 
             value = [scores[chart_num] for scores in all_scores if chart_num < len(scores)]
             values = [(i/j) * 100 for i,j in zip(value,[35,35,15,5,10])]
