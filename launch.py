@@ -93,7 +93,7 @@ class Window(QWidget):
         df = pd.DataFrame(data)
         norm = mcolors.Normalize(vmin=0, vmax=max(df['占比']))
         colors = [Window.ColorMapping.cmap(norm(val)) for val in df['占比']]
-        patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 line
+        patches, texts, autotexts = subplot.pie(df['占比'], labels=df['部分'],autopct=df['部分'], colors=colors) # modify .venv/lib/python3.12/site-packages/matplotlib/axes/_axes.py 3313 & 3260 line     's=label & 'fontsize': 20"
         plt.setp(texts, color='none')
         #subplot.set_title(title, loc='left',fontsize=80,color='white')
         plt.axis('equal')
@@ -162,7 +162,7 @@ class Window(QWidget):
             fig, axs = plt.subplots(figsize=(3840 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
             rowsCount = 12
-            columnsCount = 6
+            columnsCount = 9
             gs = GridSpec(rowsCount, columnsCount)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(columnsCount)] for i in range(rowsCount)]
             self.ratio = [35,35,15,5,15]
@@ -187,32 +187,32 @@ class Window(QWidget):
 
             #todo data mapping
             values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 0]),values1,"党建考核")
+            self.CreatePie(fig.add_subplot(gs[0, 0:2]),values1,"党建考核")
 
             values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 5]),values2,"信息化建设考核")
+            self.CreatePie(fig.add_subplot(gs[0, 7:9]),values2,"信息化建设考核")
 
             values3 = GetIntegerCount("立德树人任务完成得分","立德树人目标达成得分","立德树人资金使用得分","立德树人文档规范性得分","立德树人项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[1, 0]),values3,"立德树人考核")
+            self.CreatePie(fig.add_subplot(gs[1, 0:2]),values3,"立德树人考核")
 
             values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[1, 5]),values4,"社会服务能力考核")
+            self.CreatePie(fig.add_subplot(gs[1, 7:9]),values4,"社会服务能力考核")
 
             values5 = GetIntegerCount("整体任务完成得分","整体目标达成得分","整体资金使用得分","整体文档规范性得分","整体项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[0:2, 1:5]),GetIntegerPercentage(values5), .3, '整体考核', False)
+            self.CreateHBarCharts(fig.add_subplot(gs[0:2, 2:7]),GetIntegerPercentage(values5), .3, '整体考核', False)
 
             values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[2, 0:4]),GetIntegerPercentage(values6), .5, '治理体系考核', False)
+            self.CreateHBarCharts(fig.add_subplot(gs[2, 0:6]),GetIntegerPercentage(values6), .5, '治理体系考核', False)
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[2, 4:6]),GetIntegerPercentage(values7),.4,'国际交流合作考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[2, 6:9]),GetIntegerPercentage(values7),.4,'国际交流合作考核',False,self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 0:2]),GetIntegerPercentage(values8),.4,'智能制造专业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 0:3]),GetIntegerPercentage(values8),.4,'智能制造专业考核',False,self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 2:4]),GetIntegerPercentage(values9),.4,'新能源交通考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 3:6]),GetIntegerPercentage(values9),.4,'新能源交通考核',False,self.categories)
             values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 4:6]),GetIntegerPercentage(values10),.4,'现代服务业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 6:9]),GetIntegerPercentage(values10),.4,'现代服务业考核',False,self.categories)
 
 
             #! 比例问题
@@ -234,10 +234,10 @@ class Window(QWidget):
                     y = y_position
                     rect = plt.Rectangle((x, y), box_width, box_height, facecolor=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i])))
                     subplot.add_patch(rect)
-                    subplot.text(x + box_width / 2, y + box_height / 2, f'{reacName[i]}', ha='center', va='center', fontsize=30)
+                    subplot.text(x + box_width / 2, y + box_height / 2, f'{reacName[i]}', ha='center', va='center', fontsize=30, color='white')
                 
             #! 4
-            CreateRectCharts(fig.add_subplot(gs[4, 0:6]))
+            CreateRectCharts(fig.add_subplot(gs[4, 0:9]))
             
             #! 5
             row_start = 2
