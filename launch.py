@@ -161,8 +161,8 @@ class Window(QWidget):
             buffer = BytesIO()
             fig, axs = plt.subplots(figsize=(3840 / 72, 12000 / 72),facecolor=(3/255, 32/255, 71/255))
             axs.axis('off') 
-            rowsCount = 13
-            columnsCount = 5
+            rowsCount = 12
+            columnsCount = 6
             gs = GridSpec(rowsCount, columnsCount)
             axs = [[fig.add_subplot(gs[i, j]) for j in range(columnsCount)] for i in range(rowsCount)]
             self.ratio = [35,35,15,5,15]
@@ -187,59 +187,57 @@ class Window(QWidget):
 
             #todo data mapping
             values1 = GetIntegerCount("党建任务完成得分","党建目标达成得分","党建资金使用得分","党建文档规范性得分","党建项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0:1, 0:1]),values1,"党建考核")
+            self.CreatePie(fig.add_subplot(gs[0, 0]),values1,"党建考核")
 
             values2 = GetIntegerCount("信息化建设任务完成得分","信息化建设目标达成得分","信息化建设资金使用得分","信息化建设文档规范性得分","信息化建设项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[0, 4:5]),values2,"信息化建设考核")
+            self.CreatePie(fig.add_subplot(gs[0, 5]),values2,"信息化建设考核")
 
             values3 = GetIntegerCount("立德树人任务完成得分","立德树人目标达成得分","立德树人资金使用得分","立德树人文档规范性得分","立德树人项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[2, 0:1]),values3,"立德树人考核")
+            self.CreatePie(fig.add_subplot(gs[1, 0]),values3,"立德树人考核")
 
             values4 = GetIntegerCount("社会服务任务完成得分","社会服务目标达成得分","社会服务资金使用得分","社会服务文档规范性得分","社会服务项目执行力得分")
-            self.CreatePie(fig.add_subplot(gs[2, 4:5]),values4,"社会服务能力考核")
+            self.CreatePie(fig.add_subplot(gs[1, 5]),values4,"社会服务能力考核")
 
             values5 = GetIntegerCount("整体任务完成得分","整体目标达成得分","整体资金使用得分","整体文档规范性得分","整体项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[1, 1:4]),GetIntegerPercentage(values5), .5, '整体考核', False)
+            self.CreateHBarCharts(fig.add_subplot(gs[0:2, 1:5]),GetIntegerPercentage(values5), .3, '整体考核', False)
 
             values6 = GetIntegerCount("治理体系任务完成得分","治理体系目标达成得分","治理体系资金使用得分","治理体系文档规范性得分","治理体系项目执行力得分")
-            self.CreateHBarCharts(fig.add_subplot(gs[3, 0:4]),GetIntegerPercentage(values6), .5, '治理体系考核', False)
+            self.CreateHBarCharts(fig.add_subplot(gs[2, 0:4]),GetIntegerPercentage(values6), .5, '治理体系考核', False)
             
             #! 3
             values7 = [GetExcelData('国际任务完成得分') , GetExcelData('国际目标达成得分'), GetExcelData('国际资金使用得分'), GetExcelData('国际文档规范性得分'), GetExcelData('国际项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[3, 4]),GetIntegerPercentage(values7),.5,'国际交流合作考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[2, 4:6]),GetIntegerPercentage(values7),.4,'国际交流合作考核',False,self.categories)
             values8 = [GetExcelData('智能任务完成得分'), GetExcelData('智能目标达成得分'), GetExcelData('智能资金使用得分'), GetExcelData('智能文档规范性得分'), GetExcelData('智能项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 0]),GetIntegerPercentage(values8),.5,'智能制造专业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 0:2]),GetIntegerPercentage(values8),.4,'智能制造专业考核',False,self.categories)
             values9 = [GetExcelData('交通任务完成得分'), GetExcelData('交通目标达成得分'), GetExcelData('交通资金使用得分'), GetExcelData('交通文档规范性得分'), GetExcelData('交通项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 2]),GetIntegerPercentage(values9),.5,'新能源交通考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 2:4]),GetIntegerPercentage(values9),.4,'新能源交通考核',False,self.categories)
             values10 = [GetExcelData('现代任务完成得分'), GetExcelData('现代目标达成得分'), GetExcelData('现代资金使用得分'), GetExcelData('现代文档规范性得分'), GetExcelData('现代项目执行力得分')]
-            self.CreateBarCharts(fig.add_subplot(gs[4, 4]),GetIntegerPercentage(values10),.5,'现代服务业考核',False,self.categories)
+            self.CreateBarCharts(fig.add_subplot(gs[3, 4:6]),GetIntegerPercentage(values10),.4,'现代服务业考核',False,self.categories)
 
 
             #! 比例问题
             def ConvertCube(values):
                 return sum(([b / m for b, m in zip(values, self.ratio)])) / 5
 
-            box_width = 0.35
+            box_width = 0.1
             box_height = 0.2
-            x_positions = [0, 0.35, 0.7] 
+            x_positions = [0, 0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88] 
             y_position = 0.5
             reacName = ['治理体系','党建','国际交流合作','立德树人','社会服务','信息化建设','新能源交通','智能制造','现代服务业']
             percentages = [ConvertCube(values6), ConvertCube(values1), ConvertCube(values7),ConvertCube(values3),ConvertCube(values4),ConvertCube(values2),ConvertCube(values9),ConvertCube(values8),ConvertCube(values10)]
 
-            def CreateRectCharts(subplot, box_widthReduce ,textXPos, namePos):
-                for i in range(3):
+            def CreateRectCharts(subplot):
+                for i in range(9):
                     subplot.set_facecolor('none')
                     subplot.axis('off')
                     x = x_positions[i]
                     y = y_position
-                    rect = plt.Rectangle((x, y), box_width - box_widthReduce, box_height, facecolor=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i + namePos])))
+                    rect = plt.Rectangle((x, y), box_width, box_height, facecolor=Window.ColorMapping.cmap(Window.ColorMapping.norm(percentages[i])))
                     subplot.add_patch(rect)
-                    subplot.text(x + box_width / 2 - textXPos , y + box_height / 2, f'{reacName[i + namePos]}', ha='center', va='center', fontsize=25)
+                    subplot.text(x + box_width / 2, y + box_height / 2, f'{reacName[i]}', ha='center', va='center', fontsize=30)
                 
             #! 4
-            CreateRectCharts(fig.add_subplot(gs[5, 0:1]),0.07,0.04,0)
-            CreateRectCharts(fig.add_subplot(gs[5, 4:5]),0.07,0.04,6)
-            CreateRectCharts(fig.add_subplot(gs[5, 2:3]),0.07,0.04,3)
+            CreateRectCharts(fig.add_subplot(gs[4, 0:6]))
             
             #! 5
             row_start = 2
@@ -254,13 +252,13 @@ class Window(QWidget):
             resultVals = [float(val) for val in resultVals]
             name_val_dict = dict(zip(self.names, resultVals))
             sorted_dict = dict(sorted(name_val_dict.items(), key=lambda item: item[1]))
-            self.CreateBarCharts(fig.add_subplot(gs[6, :]), list(sorted_dict.values()),.5, '牵头人考核', False, list(sorted_dict.keys()))
+            self.CreateBarCharts(fig.add_subplot(gs[5, :]), list(sorted_dict.values()),.5, '牵头人考核', False, list(sorted_dict.keys()))
             
             #! 6
             # in export method          
 
             #! 7 调整位置
-            sheet = fig.add_subplot(gs[10, :])
+            sheet = fig.add_subplot(gs[9, :])
             tasks_and_scores = {}
             for row in self.sheets.iter_rows(min_row=4, values_only=True): 
                 name, task, score_1, score_2, score_3, score_4, score_5 = row[5], row[4], row[13], row[15], row[17], row[19], row[21]
@@ -301,13 +299,17 @@ class Window(QWidget):
             sheet.set_xlim(0, 1)
             sheet.set_ylim(0, 2)
             table.auto_set_font_size(False)
-            table.set_fontsize(20)           
+            table.set_fontsize(22)     
+            for i in range(0, len(data)):  
+                for j in range(len(data[0])): 
+                    table[(i, j)].set_height(0.1)     
+                    table[i, 0].set_text_props(weight='bold')
             for i in range(1, len(data)): 
                 table[i, 0].set_facecolor(Window.ColorMapping.cmap(Window.ColorMapping.norm(data[i][0])))
                 table[i, 0].set_text_props(weight='bold', color='white')
                 for j in range(len(data[0])): 
                     table[(i, j)].set_edgecolor('white')
-                    table[(i, j)].set_height(0.08)
+                    table[(i, j)].set_height(0.1)
                     if j != 0: 
                         table[(i, j)].set_facecolor('none')
                         table[(i, j)].get_text().set_color('white')
@@ -321,7 +323,7 @@ class Window(QWidget):
             sheet.axis('off')
             
 
-            gs.update(wspace=.4, hspace=.9) # 调整整体间距
+            gs.update(wspace=.8, hspace=.9) # 调整整体间距
             plt.subplots_adjust(top=.93, bottom=.07, right=.9, left=.1, hspace=0, wspace=0)
             plt.savefig(buffer, format='png')
             buffer.seek(0)
