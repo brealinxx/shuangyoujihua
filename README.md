@@ -2,7 +2,7 @@ Hey 这是一个练习项目，通过特定 excel 生成特定图表。
 
 ## 实例
 
-软件已经打包好，请点击 [Release](https://github.com/brealinxx/shuangyoujihua/releases/tag/v1.0) 下载
+软件和示例表格已经打包好，请点击 [Release](https://github.com/brealinxx/shuangyoujihua/releases/tag/v1.0) 下载
 
 ## 手动编译
 
@@ -24,7 +24,7 @@ Hey 这是一个练习项目，通过特定 excel 生成特定图表。
 
 >记得修改为自己的路径再激活 activate
 
-3. 安装相关依赖，输入命令 pip3 install -r requirements.txt
+3. 安装相关依赖，输入命令 `pip3 install -r requirements.txt` 
 
 ### 根据特定要求修改 matplotlib 包的源码
 
